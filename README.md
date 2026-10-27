@@ -28,6 +28,8 @@
 
 本轮已记录 188 项单元/集成测试、50 项 API 回归、22 项跨浏览器 E2E，以及 12 项公网部署检查通过；类型检查和生产构建通过，部署时生产依赖审计为 0 项。详细环境、提交和证据见 [验证记录](verification/README.md) 与 [公网部署记录](deploy/DEPLOYMENT.md)。
 
+成员 A 补充了独立的 S1 重启持久化回归，当前单元/集成测试共 190 项；新增浏览器验证及交接入口见 [成员 A 的 S1 记录](verification/member-a-s1/README.md)。这组源码补充尚不代表公网部署版本已更新。
+
 S1～S4 的实现与自测已完成，组员独立人工验收尚未执行，按用户决定不阻塞本次公网演示。历史 CHECK 结论保留在 [验证清单](checklist.md)，候选包阶段的补验与打包方式见 [候选交付记录](verification/RELEASE-candidate.md)。
 
 ## 获取项目
@@ -87,10 +89,11 @@ npm start
 
 ```powershell
 npm run typecheck        # 三个包类型检查
-npm test                 # shared + backend + frontend（188 项）
+npm test                 # shared + backend + frontend（190 项）
 npm run check:api        # 一键 HTTP 契约与安全回归（临时库，50 项）
 npm run test:e2e         # 双浏览器 E2E（需服务已启动；E2E_BROWSER=chrome 可换 Chrome）
 npm run test:e2e:launcher # 浏览器选择与禁止静默回退的回归
+npm run test:e2e:s1      # 构建后使用临时库/随机端口，真实创建、刷新与重启，无需预启动服务
 # 隔离服务、临时库及 Chrome/Edge 配置见 verification/RELEASE-candidate.md
 npm run check:browser
 ```
@@ -119,6 +122,7 @@ npm run check:browser
 | 查看 AI 输入、首次结果、人工修正与验证证据 | [ai-log.md](ai-log.md) |
 | 查看实测记录、截图与逐条 CHECK 结论 | [verification/](verification/README.md) |
 | 运行浏览器补验、打包与组员独立复验 | [候选交付说明](verification/RELEASE-candidate.md) |
+| 成员 A 的 S1 计划、重启验证与独立验收入口 | [成员 A 交接](verification/member-a-s1/README.md) |
 
 课程补充材料：[飞书文档](https://hypersmart.feishu.cn/wiki/IK4YwAvp6i3X9hk5Ih1csuTjn9g)。外部材料的具体要求以课程方发布为准。
 

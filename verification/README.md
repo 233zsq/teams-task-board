@@ -30,6 +30,7 @@
 | [TASK-017-dual-browser.md](TASK-017-dual-browser.md) | 双浏览器刷新、覆盖、外部删除、失败恢复 | TASK-017 / CHECK-022～028、029、030 |
 | [TASK-018-api-regression.md](TASK-018-api-regression.md) | 一键 HTTP 契约与安全边界回归 | TASK-018 / CHECK-031～036 |
 | [TASK-032-final-regression.md](TASK-032-final-regression.md) | 最终版本核心回归与 CHECK-001～043 逐条结论 | TASK-032 / CHECK-001～043 |
+| [member-a-s1/README.md](member-a-s1/README.md) | 成员 A 计划、独立 S1 创建与进程重启验证、交接证据 | S1 / CHECK-001、002、005、007、008、009、038、042 |
 
 ## 复现命令（摘要）
 

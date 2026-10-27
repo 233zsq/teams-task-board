@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-27T14:54:35.469Z",
+  "browser": "155.0.4283.60",
+  "node": "v24.18.0",
+  "boardId": "319e3a4e-9ee5-4afd-a8fb-871575560003",
+  "taskIds": [
+    "3e9b6cfa-e2ef-4d72-b872-218d30b4d542",
+    "2e4d687d-1659-4622-bd7b-1cd41f1cdad2",
+    "4a353d36-5e09-4ead-9329-01f6e6b71e9b",
+    "afaf504f-6560-49ce-8420-19fad37880a8"
+  ],
+  "count": 4,
+  "reload": "passed",
+  "processRestart": "passed",
+  "repeatedInitialization": "passed",
+  "pureText": "passed",
+  "screenshots": [
+    1366,
+    768,
+    360
+  ],
+  "database": "temporary SQLite fixture, cleaned after run"
+}
