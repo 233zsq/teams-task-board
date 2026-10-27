@@ -4,7 +4,20 @@ import { normalizeBoardName, type Board } from '@team-plan/shared';
 import { useWorkspaceStore } from '../../state/injection';
 import { describeError } from '../ui/messages';
 
-const props = withDefaults(defineProps<{ disabled?: boolean }>(), { disabled: false });
+const props = withDefaults(
+  defineProps<{
+    /** Unique DOM id: the sidebar and the empty-state guide render the same form. */
+    inputId: string;
+    disabled?: boolean;
+    /**
+     * Optional creation handler owned by the page. The empty-state guide is
+     * unmounted as soon as the board list becomes non-empty, so navigation must
+     * not depend on this component's `created` event.
+     */
+    createBoard?: (name: string) => Promise<Board>;
+  }>(),
+  { disabled: false, createBoard: undefined },
+);
 const emit = defineEmits<{ created: [board: Board]; busy: [creating: boolean] }>();
 
 const store = useWorkspaceStore();
@@ -31,8 +44,9 @@ async function submit(): Promise<void> {
   emit('busy', true);
 
   try {
+    const create = props.createBoard ?? ((value: string) => store.createBoard(value));
     // The name stays in the input until the server confirms the new board.
-    const board = await store.createBoard(parsed.value);
+    const board = await create(parsed.value);
     name.value = '';
     emit('created', board);
   } catch (error) {
@@ -47,9 +61,9 @@ async function submit(): Promise<void> {
 
 <template>
   <form class="create-board" @submit.prevent="submit">
-    <label class="field-label sr-only" for="new-board-name">新建看板名称</label>
+    <label class="field-label sr-only" :for="props.inputId">新建看板名称</label>
     <input
-      id="new-board-name"
+      :id="props.inputId"
       v-model="name"
       class="input"
       type="text"

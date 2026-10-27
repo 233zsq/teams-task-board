@@ -18,7 +18,6 @@ function setup(options: {
   mode?: 'create' | 'edit';
   task?: Task | null;
   membersStatus?: 'ready' | 'error';
-  overwriteRisk?: boolean;
 } = {}): {
   api: ReturnType<typeof createFakeApi>;
   store: ReturnType<typeof createWorkspaceStore>;
@@ -40,7 +39,6 @@ function setup(options: {
     props: {
       mode: options.mode ?? 'create',
       task: options.task ?? null,
-      overwriteRisk: options.overwriteRisk ?? false,
       members: store.state.members,
     },
     attachTo: document.body,
@@ -215,7 +213,11 @@ describe('task form', () => {
 
   it('warns about overwriting and can cancel before the PUT', async () => {
     const task = makeTask({ id: 't1', title: '旧标题' });
-    const { api, wrapper } = setup({ mode: 'edit', task, overwriteRisk: true });
+    const { api, wrapper } = setup({ mode: 'edit', task });
+    // Someone else saved after this form loaded its snapshot.
+    api.set('getTask', async () =>
+      makeTask({ id: 't1', title: '别人改的标题', updatedAt: '2026-10-20T06:00:00.000Z' }),
+    );
 
     await wrapper.find('#task-title').setValue('新标题');
     await buttonByText(wrapper, '保存任务').trigger('click');
@@ -233,6 +235,19 @@ describe('task form', () => {
 
     expect(api.calls.find((call) => call.method === 'updateTask')?.args[1]).toBe('t1');
     expect(wrapper.emitted('saved')).toHaveLength(1);
+  });
+
+  it('saves an unchanged snapshot without an overwrite prompt', async () => {
+    const task = makeTask({ id: 't1', title: '旧标题' });
+    const { api, wrapper } = setup({ mode: 'edit', task });
+    api.set('getTask', async () => task);
+
+    await wrapper.find('#task-title').setValue('新标题');
+    await buttonByText(wrapper, '保存任务').trigger('click');
+    await flushPromises();
+
+    expect(wrapper.text()).not.toContain('可能覆盖他人修改');
+    expect(api.calls.filter((call) => call.method === 'updateTask')).toHaveLength(1);
   });
 
   it('tells the user when the edited task was deleted elsewhere', async () => {
