@@ -28,9 +28,12 @@
     "db:init": "npm run db:init -w backend",
     "db:demo": "npm run build:shared && npm run db:demo -w backend",
     "db:reset-demo": "npm run build:shared && npm run db:reset-demo -w backend",
-    "check:api": "npm run build:shared && node scripts/http-regression.mjs"
+    "db:reset-demo:yes": "npm run build:shared && npm run db:reset-demo -w backend -- --yes",
+    "check:api": "npm run build && node scripts/http-regression.mjs",
+    "test:e2e": "node tests/e2e/dual-browser.mjs"
   },
   "devDependencies": {
-    "concurrently": "9.1.0"
+    "concurrently": "9.1.0",
+    "playwright-core": "1.64.1"
   }
 }
