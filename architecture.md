@@ -1,6 +1,6 @@
 # 团队任务协作看板：系统架构
 
-版本：0.6｜日期：2026-10-27｜状态：S0 后端基础已实现，业务 API 与前端待 S1 实现
+版本：0.6｜日期：2026-10-27｜状态：S0 已完成，S1 创建与读取已实现、待独立验收
 
 本文解释系统边界、关键运行语义和技术决策。用户场景、字段、业务规则、数据库约束与 API 契约以 [spec.md](spec.md) 为唯一事实来源；切片分工见 [tasks.md](tasks.md)，验收见 [checklist.md](checklist.md)。本文不复制这些契约。
 
@@ -23,13 +23,13 @@
 
 | 部分 | 基线 | 当前状态 |
 | --- | --- | --- |
-| 页面 | Vue 3 + TypeScript + Vite；页面级响应式状态 | 目标，尚未创建前端工作区 |
+| 页面 | Vue 3 + TypeScript + Vite；页面级响应式状态 | S1 的入口、表单、三列和详情已实现 |
 | HTTP 后端 | Node.js、TypeScript strict、Express 5 | 已有 `createApp` 与 `server` 分离的后端骨架 |
 | 持久化 | `better-sqlite3`、参数化 SQL、无 ORM | 已有连接、约束、初始化、迁移和固定成员种子 |
-| 仓库 | npm workspaces、单一根锁文件；后续增加 frontend/shared | 当前根工作区仅包含 backend |
-| 测试 | Vitest、Supertest、临时真实 SQLite；后续增加浏览器回归 | 已有后端测试，业务与浏览器测试待实现 |
+| 仓库 | npm workspaces、单一根锁文件 | backend/frontend/shared 三工作区 |
+| 测试 | Vitest、Supertest、临时真实 SQLite、Playwright | S1 业务、前端及真实 Edge 回归已实现 |
 
-当前记录环境为 Node.js 18.17.1，`engines >=18.17`；Node 22 LTS 是待课程机复核的目标基线。版本与命令以实际 `package.json`、锁文件和 README 为准。
+当前 S1 验证环境为 Node.js 24.18.0、npm 11.16.0，根 engines 为 `^22.22.2 || >=24.15.0`；S0 的 Node 18 记录不表示当前前端可在旧版运行。版本与命令以实际 package.json、锁文件和 README 为准。
 
 ## 3. 运行视图与依赖方向
 
@@ -38,7 +38,7 @@ flowchart LR
     B["浏览器：页面与表单"] -->|"同源页面与 /api/v1 JSON"| W["Web 入口"]
     W --> F["前端静态资源与 SPA 路由（目标）"]
     W --> H["Express HTTP 入口（当前）"]
-    H --> S["看板 / 成员 / 任务业务模块（目标）"]
+    H --> S["看板 / 成员 / 任务创建读取（S1 当前）"]
     S --> D["数据库模块（当前）"]
     D --> Q[("SQLite 文件")]
 ```
@@ -59,6 +59,8 @@ flowchart LR
 - shared 出现后，构建顺序为 shared → frontend/backend，开发脚本需保证两端不会读取旧产物。
 
 ## 4. 前端目标结构
+
+S1 已落实 `App.vue` 的健康门禁、`BoardView.vue` 的交互协调、`useWorkspace.ts` 的快照与请求生命周期、`TaskForm.vue` 的独立草稿，以及 `api` 的传输边界。`backend/src/business/boards.ts` 维护具体业务与 SQLite 映射，HTTP 路由只校验边界并包装结果。S3 可在该边界增加编辑/删除，S4 继续加固协同与部署；后续目标不能据此视为已验收。
 
 ### 4.1 状态边界
 

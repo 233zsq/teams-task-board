@@ -6,7 +6,7 @@
 
 ## 当前状态
 
-**S0 后端基础已完成，S1 最小真实闭环待开始。**
+**S0 已完成；S1 创建与展示已实现，待成员 C 独立验收及合并。**
 
 仓库目前包含：
 
@@ -14,9 +14,11 @@
 - 原型截图和样式参考；
 - Express 后端骨架、健康检查、请求与安全边界；
 - SQLite P0 表、固定成员种子、连续迁移编号与校验和；
-- 后端隔离测试。
+- 看板创建/读取、成员读取、任务创建/读取的真实 API；
+- Vue 页面、shared 契约、三列与详情、表单及错误恢复；
+- 后端隔离测试、前端测试与真实 Edge 浏览器回归。
 
-业务 API、Vue 前端和浏览器端到端测试尚未实现。现在启动的是**后端基础服务，不是完整看板应用**；CHECK-001～058 尚未按最终业务版本验收。
+现在可运行“建看板 → 建任务 → 三列/详情 → 刷新与重启持久化”。编辑、删除、状态变更与选做功能尚未实现，完整 P0 仍需 S2～S4。CHECK 清单尚未经过成员 C 的独立确认，不把自动化结果等同团队验收。见 [S1 验证报告](docs/s1-verification.md)。
 
 ## 获取项目
 
@@ -25,20 +27,27 @@ git clone https://github.com/233zsq/teams-task-board.git
 cd teams-task-board
 ```
 
-## 本地运行当前后端
+## 本地运行
 
-已记录验证环境为 Windows + Node.js 18.17.1 + npm 9.6.7；当前 `engines` 为 Node.js `>=18.17`，依赖版本以锁文件为准。课程机采用其他版本时，应实际复验并更新记录。
+本轮验证环境：Windows、Node.js **24.18.0**、npm **11.16.0**。前端依赖要求较新的 Node；根 `engines` 为 `^22.22.2 || >=24.15.0`。依赖以根锁文件为准；历史 Node 18 记录仅属于 S0 后端，不代表当前前端兼容。
 
 在仓库根目录使用 PowerShell：
 
 ```powershell
 npm ci
-Copy-Item .env.example .env
+# 默认配置即可本机运行；需要自定义时，仅首次复制，勿覆盖已有配置
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 npm run db:init
 npm run dev:backend
 ```
 
-另开终端检查健康接口：
+另开终端运行前端：
+
+```powershell
+npm run dev:frontend
+```
+
+打开 <http://127.0.0.1:5173>。Vite 将 `/api` 代理至 `127.0.0.1:3000`，数据写入配置的真实 SQLite。检查健康接口：
 
 ```powershell
 curl.exe http://127.0.0.1:3000/api/v1/health
@@ -48,15 +57,28 @@ curl.exe http://127.0.0.1:3000/api/v1/health
 - 数据库未初始化、结构不兼容或配置无效时，服务明确失败，不回退到内存库或另一个空库。
 - 配置键以 `.env.example` 为入口；`.env` 和本地数据库不提交仓库。
 
-当前后端验证命令：
+验证及构建命令：
 
 ```powershell
 npm run test:backend
+npm run test:frontend
 npm run typecheck
 npm run build:backend
+npm run build:frontend
+npm run test:e2e
 ```
 
-前端与共享工作区出现后，再补充对应启动和检查命令；未实现的命令不提前写成可用操作。
+`test:e2e` 默认使用本机 Microsoft Edge，独占测试端口 3101/5174；每例使用独立临时 SQLite，结束后关闭测试进程并清理数据库。可设置 `PLAYWRIGHT_CHANNEL=chrome` 使用已安装的 Chrome；其他平台可设置 `PLAYWRIGHT_CHANNEL=chromium` 并安装 Playwright Chromium。测试不会连接开发数据库，也不复用已有端口服务。
+
+共享包在根 dev/test/build 命令开始前构建；修改 shared 后重新运行相应命令，使前后端读取新产物。后端生产构建可用 `npm start -w backend` 启动；S1 仍使用 Vite 提供页面，Express 静态同源部署由 S4 实施。
+
+`npm run dev:frontend:demo` 是单独的内存夹具预览，页面会显示提示；它不持久化，不作为 S1 验收入口。日常运行请用 `dev:frontend`。
+
+## S1 实际运行效果
+
+![真实 API 与 SQLite 的三列页面](docs/evidence/s1/board-1366.png)
+
+[成员 A 计划](docs/member-a-plan.md) · [操作与交接手册](docs/s1-handoff.md) · [验证与审查记录](docs/s1-verification.md)
 
 ## 预期效果
 

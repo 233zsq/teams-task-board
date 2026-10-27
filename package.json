@@ -3,16 +3,24 @@
   "version": "0.1.0",
   "private": true,
   "workspaces": [
-    "backend"
+    "shared",
+    "backend",
+    "frontend"
   ],
   "engines": {
-    "node": ">=18.17"
+    "node": "^22.22.2 || >=24.15.0"
   },
   "scripts": {
-    "dev:backend": "npm run dev -w backend",
-    "build:backend": "npm run build -w backend",
-    "test:backend": "npm run test -w backend",
-    "typecheck": "npm run typecheck -w backend",
-    "db:init": "npm run db:init -w backend"
+    "dev:backend": "npm run build:shared && npm run dev -w backend",
+    "build:backend": "npm run build:shared && npm run build -w backend",
+    "test:backend": "npm run build:shared && npm run test -w backend",
+    "typecheck": "npm run build:shared && npm run typecheck --workspaces --if-present",
+    "db:init": "npm run db:init -w backend",
+    "build:shared": "npm run build -w shared",
+    "dev:frontend": "npm run build:shared && npm run dev -w frontend",
+    "dev:frontend:demo": "npm run build:shared && npm run dev:demo -w frontend",
+    "build:frontend": "npm run build:shared && npm run build -w frontend",
+    "test:frontend": "npm run build:shared && npm run test -w frontend",
+    "test:e2e": "npm run build:backend && npm run test:e2e -w frontend"
   }
 }

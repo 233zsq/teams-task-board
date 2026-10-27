@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@team-plan/shared": "*",
     "better-sqlite3": "11.10.0",
     "dotenv": "16.4.7",
     "express": "5.1.0"

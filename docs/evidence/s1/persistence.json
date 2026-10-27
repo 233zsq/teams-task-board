@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-27T13:11:39.210Z",
+  "boardId": "392ab3be-c2a4-4d17-b2dd-22be35a710b1",
+  "taskIds": [
+    "1412a8a2-ed92-47e2-ae84-664f71a9bad1",
+    "d548e1cf-c0b2-4fb4-bf6d-d743a8276288",
+    "ad0a27cf-08f5-4cea-ab6e-a841ea4f6875",
+    "23278bf9-b8ca-45f2-8f20-9e1369846b8c"
+  ],
+  "count": 4,
+  "reload": "passed",
+  "processRestart": "passed",
+  "browser": "155.0.4283.60",
+  "backendPort": 3101,
+  "frontendPort": 5174,
+  "database": "isolated OS-temp SQLite fixture, removed after test"
+}

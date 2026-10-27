@@ -14,7 +14,7 @@
 ## 当前事实
 
 - 已有 Node.js + TypeScript + Express 5 后端骨架、`better-sqlite3` 数据库初始化/迁移和后端测试。
-- 业务 API、Vue 前端、shared 包与浏览器端到端测试尚未实现；新增后应同步更新本段与 README。
+- S1 已实现看板创建/读取、成员读取、任务创建/读取 API、Vue 页面、shared 包与真实浏览器测试；待成员 C 独立验收和合并。任务修改/删除与其余 S2～S5 尚未完成。
 - 命令与依赖版本以根 `package.json`、各工作区 `package.json` 和锁文件为准。运行 `npm run` 可查看当前脚本，不执行文档中尚未提供的命令。
 
 ## 工作循环
