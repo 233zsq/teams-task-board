@@ -4,6 +4,8 @@
 [tasks.md](../tasks.md) 的切片验收卡使用。每条记录都写明**被测提交、环境、执行命令、结果与残留项**；
 截图见 [screenshots](screenshots/)。切片级的 AI 过程记录见 [ai-log.md](../ai-log.md)。
 
+本轮追加的 Chrome for Testing + Edge、浏览器 HTTP 故障/慢响应补验与候选打包入口见 [RELEASE-candidate.md](RELEASE-candidate.md)。下方 `c077db9` 保留为历史记录的被测提交，不冒称为新候选提交的结果。
+
 ## 被测版本与环境（2026-10-27）
 
 | 项 | 值 |

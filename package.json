@@ -30,7 +30,10 @@
     "db:reset-demo": "npm run build:shared && npm run db:reset-demo -w backend",
     "db:reset-demo:yes": "npm run build:shared && npm run db:reset-demo -w backend -- --yes",
     "check:api": "npm run build && node scripts/http-regression.mjs",
-    "test:e2e": "node tests/e2e/dual-browser.mjs"
+    "test:e2e": "node tests/e2e/dual-browser.mjs",
+    "test:e2e:launcher": "node --test tests/e2e/browser.test.mjs",
+    "check:browser": "node tests/e2e/release-regression.mjs",
+    "package:candidate": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/package-candidate.ps1"
   },
   "devDependencies": {
     "concurrently": "9.1.0",

@@ -13,12 +13,13 @@
  *   1. start the backend (optionally with the demo database)
  *   2. npm run test:e2e            (BASE_URL=http://127.0.0.1:3000 by default)
  *      E2E_BROWSER=chrome npm run test:e2e   (record a Chrome pass instead)
+ *      E2E_BROWSER_A=chrome E2E_BROWSER_B=msedge npm run test:e2e
+ *   E2E_EXECUTABLE_A/B optionally selects an explicit portable executable.
+ *   A requested browser that cannot start fails; no substitute is launched.
  */
-import { chromium } from 'playwright-core';
+import { browserConfig, launchBrowser } from './browser.mjs';
 
 const BASE_URL = process.env.BASE_URL ?? 'http://127.0.0.1:3000';
-/** msedge by default; set E2E_BROWSER=chrome to record a Chrome pass instead. */
-const BROWSER_CHANNEL = process.env.E2E_BROWSER ?? 'msedge';
 const BOARD_NAME = `E2E 双浏览器验证 ${new Date().toISOString().slice(11, 19)}`;
 const TASK_TITLE = 'E2E 任务';
 const results = [];
@@ -41,17 +42,6 @@ async function api(method, path, body) {
   });
   const text = await response.text();
   return { status: response.status, body: text === '' ? null : JSON.parse(text) };
-}
-
-async function launchBrowser(label) {
-  try {
-    const browser = await chromium.launch({ channel: BROWSER_CHANNEL, headless: true });
-    return { browser, engine: `${BROWSER_CHANNEL} ${browser.version()}`, label };
-  } catch (error) {
-    const fallback = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
-    const browser = await chromium.launch({ executablePath: fallback, headless: true });
-    return { browser, engine: `msedge(executablePath) ${browser.version()}`, label };
-  }
 }
 
 async function openBoard(page, boardId) {
@@ -79,10 +69,13 @@ async function main() {
     throw new Error(`后端未运行或健康检查失败（${BASE_URL}），请先启动后端`);
   }
 
-  const a = await launchBrowser('A');
-  const b = await launchBrowser('B');
-
+  const configs = ['A', 'B'].map((label) => browserConfig(process.env, label));
+  const browsers = [];
   try {
+    const a = await launchBrowser('A', configs[0]);
+    browsers.push(a.browser);
+    const b = await launchBrowser('B', configs[1]);
+    browsers.push(b.browser);
     const contextA = await a.browser.newContext({ viewport: { width: 1366, height: 900 } });
     const contextB = await b.browser.newContext({ viewport: { width: 1366, height: 900 } });
     const pageA = await contextA.newPage();
@@ -92,7 +85,7 @@ async function main() {
     await pageA.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
     await pageA.locator('#new-board-sidebar-name').waitFor({ state: 'visible' });
     await pageA.locator('#new-board-sidebar-name').fill(BOARD_NAME);
-    await pageA.getByRole('button', { name: '新建看板' }).click();
+    await pageA.locator('.sidebar-create').getByRole('button', { name: '新建看板', exact: true }).click();
     await pageA.getByRole('heading', { level: 1, name: BOARD_NAME }).waitFor({ state: 'visible' });
 
     const boards = await api('GET', '/boards');
@@ -230,8 +223,7 @@ async function main() {
 
     console.log(`引擎：A = ${a.engine}；B = ${b.engine}`);
   } finally {
-    await a.browser.close();
-    await b.browser.close();
+    await Promise.allSettled(browsers.map((browser) => browser.close()));
   }
 
   const pad = (value, width) => String(value).padEnd(width, ' ');

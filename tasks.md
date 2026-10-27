@@ -13,12 +13,12 @@
 | S0：契约与后端基础 | TASK-001：2026-10-21 四人确认 P0 契约；TASK-002：后端骨架、健康检查、请求与安全边界；TASK-005：P0 数据库、固定成员种子、迁移编号与校验和 | 原 TASK-002 记录 36 项测试；TASK-005 合并后记录 50 项测试，typecheck/build 通过；当前命令见 [README](README.md) | 已完成（2026-10-21） |
 | S1：最小真实闭环 | 共享契约与纯规则、统一 API 客户端、看板/成员/任务创建与读取 API、三列与详情 UI、真实 SQLite | 186 项测试、`check:api` 50/50、浏览器实测；[TASK-015 联调记录](verification/TASK-015-first-integration.md)、[TASK-032 回归](verification/TASK-032-final-regression.md) | 实现与自测完成（2026-10-27），待非主驾独立验收 |
 | S2：看板体验 | 列表排序、同名区分、默认选中、深链、404、骨架与失败重试、切板竞态防护 | `workspace.test.ts`、`home-page.test.ts`、Edge 实测（CHECK-003/004） | 同上 |
-| S3：任务维护 | 完整 PUT、编辑、删除、六种状态、负责人、日期与逾期、覆盖提示、键盘与 360/768/1366 适配 | `tasks-api.test.ts`、`task-form.test.ts`、`status-delete.test.ts`、双浏览器 E2E | 同上；CHECK-029/030 的 Chrome 品牌项待补验 |
+| S3：任务维护 | 完整 PUT、编辑、删除、六种状态、负责人、日期与逾期、覆盖提示、键盘与 360/768/1366 适配 | `tasks-api.test.ts`、`task-form.test.ts`、`status-delete.test.ts`、双浏览器 E2E；[浏览器补验](verification/RELEASE-candidate.md) | 同上；Chrome/Edge 自动化已补齐，CHECK-029/030 待人工独立复验 |
 | S4：协同与交付加固 | 双浏览器刷新、失败恢复、API/安全回归、备份恢复、演示数据与一键脚本 | [TASK-017](verification/TASK-017-dual-browser.md)、[TASK-018](verification/TASK-018-api-regression.md)、[TASK-032](verification/TASK-032-final-regression.md) | 同上 |
 
 当前仓库已包含业务 API、Vue 前端、shared 包、浏览器端到端脚本与回归记录；S1～S4 的实现与自测完成，
 **独立验收（非主驾按原 CHECK 复验）尚未进行**，S5 未选择，RELEASE 仅完成干净环境复演、备份恢复与规模观察，
-固定提交与发布标签（TASK-035）待做。CHECK-001～043 实测结论见 [checklist.md](checklist.md) 与 [verification/](verification/README.md)。
+本轮新增固定提交候选打包工具和浏览器补验，使用方式见 [候选交付说明](verification/RELEASE-candidate.md)；正式发布标签（TASK-035）及独立验收仍待做。CHECK-001～043 实测结论见 [checklist.md](checklist.md) 与 [verification/](verification/README.md)。
 
 ## 2. 每轮怎么工作
 
@@ -45,7 +45,7 @@
 | --- | --- | --- | --- | --- | --- |
 | S1 最小真实闭环 | 建看板 → 建任务 → 三列/详情展示 → 刷新与重启仍存在 | A | C | S0 | 进行中（实现与自测完成，待独立验收） |
 | S2 看板体验 | 多看板切换、直接链接、同名区分、空态与加载失败恢复 | B | D | S1 | 进行中（实现与自测完成，待独立验收） |
-| S3 任务维护 | 编辑、删除、状态流转、负责人、日期与逾期、键盘和窄屏操作 | C | A | S1 | 进行中（实现与自测完成，待独立验收；Chrome 品牌项待补验） |
+| S3 任务维护 | 编辑、删除、状态流转、负责人、日期与逾期、键盘和窄屏操作 | C | A | S1 | 进行中（Chrome/Edge 自动化已补齐，待人工独立验收） |
 | S4 协同与交付加固 | 多浏览器刷新、异常恢复、API/安全回归、备份恢复和一键演示 | D | B | S2、S3 | 进行中（实现与自测完成，待独立验收） |
 | S5 可选增强 | 只交付选定扩展的完整用户闭环 | 选择后指定 | 非主驾成员 | 核心门禁 | 未选择 |
 | RELEASE 最终复演 | 固定版本、干净环境、完整演示和课程证据包 | A 汇总，全员参与 | 非对应切片主驾 | S4；所选 S5 | 进行中（干净环境与备份恢复已复演，打包与标签待做） |

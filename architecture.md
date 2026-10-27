@@ -29,7 +29,7 @@
 | 仓库 | npm workspaces、单一根锁文件；后续增加 frontend/shared | 已包含 shared/backend/frontend 三个工作区与统一锁文件 |
 | 测试 | Vitest、Supertest、临时真实 SQLite；后续增加浏览器回归 | 已有 186 项单元/集成测试、一键 HTTP 回归与双浏览器 E2E 脚本 |
 
-当前记录环境为 Node.js 18.17.1，`engines >=18.17`；Node 22 LTS 是待课程机复核的目标基线。版本与命令以实际 `package.json`、锁文件和 README 为准。
+当前实测环境为 Node.js 24.18.0、npm 11.16.0，`engines >=18.17`；课程机采用其他版本时需复验。版本与命令以实际 `package.json`、锁文件和 README 为准。
 
 ## 3. 运行视图与依赖方向
 

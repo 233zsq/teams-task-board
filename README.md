@@ -19,9 +19,11 @@
 - 单元/集成测试 186 项、一键 HTTP 回归（50 项）、双浏览器 E2E 脚本（22 项）；
 - 实测记录与截图：[verification/](verification/README.md)。
 
-CHECK-001～043 已按同一候选提交执行并记录（41 项通过；CHECK-029/030 的 Chrome 品牌项待补验），
+CHECK-001～043 已按候选提交执行并记录（41 项通过；CHECK-029/030 已补齐 Chrome/Edge 自动化，仍待人工独立复验），
 逐条结论见 [checklist.md](checklist.md) 与 [verification/TASK-032-final-regression.md](verification/TASK-032-final-regression.md)。
 S5（优先级、筛选、拖拽、分享）未选择、未实施。
+
+最新补验与候选包说明见 [RELEASE-candidate.md](verification/RELEASE-candidate.md)：Chrome/Edge 完整尺寸操作、键盘、慢请求与故障恢复已补跑；候选包可通过 `npm run package:candidate` 生成，正式验收与发布仍待完成。
 
 ## 获取项目
 
@@ -83,6 +85,9 @@ npm run typecheck        # 三个包类型检查
 npm test                 # shared + backend + frontend（186 项）
 npm run check:api        # 一键 HTTP 契约与安全回归（临时库，50 项）
 npm run test:e2e         # 双浏览器 E2E（需服务已启动；E2E_BROWSER=chrome 可换 Chrome）
+npm run test:e2e:launcher # 浏览器选择与禁止静默回退的回归
+# 隔离服务、临时库及 Chrome/Edge 配置见 verification/RELEASE-candidate.md
+npm run check:browser
 ```
 
 - `npm run db:init` 只应用待执行迁移并幂等写入四名固定成员，可重复执行，不删除看板或任务。
@@ -110,6 +115,7 @@ npm run test:e2e         # 双浏览器 E2E（需服务已启动；E2E_BROWSER=c
 | 给编码代理提供仓库操作约束 | [AGENTS.md](AGENTS.md) |
 | 查看 AI 输入、首次结果、人工修正与验证证据 | [ai-log.md](ai-log.md) |
 | 查看实测记录、截图与逐条 CHECK 结论 | [verification/](verification/README.md) |
+| 运行浏览器补验、打包与组员独立复验 | [候选交付说明](verification/RELEASE-candidate.md) |
 
 课程补充材料：[飞书文档](https://hypersmart.feishu.cn/wiki/IK4YwAvp6i3X9hk5Ih1csuTjn9g)。外部材料的具体要求以课程方发布为准。
 
