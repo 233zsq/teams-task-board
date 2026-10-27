@@ -70,7 +70,7 @@ describe('board navigation', () => {
     const store = createWorkspaceStore(api);
     const wrapper = mountSidebar(store);
 
-    await wrapper.find('#new-board-name').setValue('  产品原型  ');
+    await wrapper.find('#new-board-sidebar-name').setValue('  产品原型  ');
     await wrapper.find('form.create-board').trigger('submit');
     await flushPromises();
 
@@ -78,7 +78,7 @@ describe('board navigation', () => {
       { name: '产品原型' },
     ]);
     expect(wrapper.emitted('created')).toHaveLength(1);
-    expect((wrapper.find('#new-board-name').element as HTMLInputElement).value).toBe('');
+    expect((wrapper.find('#new-board-sidebar-name').element as HTMLInputElement).value).toBe('');
   });
 
   it('submits only once while a creation request is pending', async () => {
@@ -87,7 +87,7 @@ describe('board navigation', () => {
     const store = createWorkspaceStore(api);
     const wrapper = mountSidebar(store);
 
-    await wrapper.find('#new-board-name').setValue('课程作业');
+    await wrapper.find('#new-board-sidebar-name').setValue('课程作业');
     const form = wrapper.find('form.create-board');
     void form.trigger('submit');
     void form.trigger('submit');
@@ -108,11 +108,11 @@ describe('board navigation', () => {
     const store = createWorkspaceStore(api);
     const wrapper = mountSidebar(store);
 
-    await wrapper.find('#new-board-name').setValue('课程作业');
+    await wrapper.find('#new-board-sidebar-name').setValue('课程作业');
     await wrapper.find('form.create-board').trigger('submit');
     await flushPromises();
 
-    expect((wrapper.find('#new-board-name').element as HTMLInputElement).value).toBe('课程作业');
+    expect((wrapper.find('#new-board-sidebar-name').element as HTMLInputElement).value).toBe('课程作业');
     expect(wrapper.text()).toContain('服务暂不可用，请稍后重试');
   });
 

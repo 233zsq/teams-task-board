@@ -26,12 +26,10 @@ const props = withDefaults(
     /** Edit mode: snapshot loaded from the server right before opening. */
     task?: Task | null;
     members: Resource<Member[]>;
-    /** The freshest server snapshot differs from the list; warn before saving. */
-    overwriteRisk?: boolean;
     /** Column entry point preselects that column's status. */
     initialStatus?: TaskStatus;
   }>(),
-  { task: null, overwriteRisk: false, initialStatus: 'todo' },
+  { task: null, initialStatus: 'todo' },
 );
 
 const emit = defineEmits<{
@@ -193,18 +191,25 @@ async function submit(): Promise<void> {
     return;
   }
 
-  if (props.mode === 'edit' && props.overwriteRisk) {
-    const confirmed = await askOverwrite();
-    if (!confirmed) {
-      return;
-    }
-  }
-
   saving.value = true;
   errorText.value = null;
   taskGone.value = false;
 
   try {
+    if (props.mode === 'edit' && props.task !== null) {
+      // Compare with the server right before saving: if the task changed after
+      // this form loaded it, the user decides whether to overwrite (no lock).
+      const latest = await store.fetchTask(props.task.id);
+      if (latest.updatedAt !== props.task.updatedAt) {
+        saving.value = false;
+        const confirmed = await askOverwrite();
+        if (!confirmed) {
+          return;
+        }
+        saving.value = true;
+      }
+    }
+
     const task =
       props.mode === 'create' || props.task === null
         ? await store.createTask(input)

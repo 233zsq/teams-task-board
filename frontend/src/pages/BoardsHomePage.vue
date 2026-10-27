@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import type { Board } from '@team-plan/shared';
 import BoardSidebar from '../features/boards/BoardSidebar.vue';
 import CreateBoardForm from '../features/boards/CreateBoardForm.vue';
 import { describeError } from '../features/ui/messages';
@@ -33,6 +34,16 @@ function select(boardId: string): void {
 
 function created(boardId: string): void {
   void router.push(`/boards/${boardId}`);
+}
+
+/**
+ * Used by the empty-state guide: the guide disappears as soon as a board
+ * exists, so the page performs creation + selection in one owned flow.
+ */
+async function createAndOpen(name: string): Promise<Board> {
+  const board = await store.createBoard(name);
+  await router.push(`/boards/${board.id}`);
+  return board;
 }
 
 function retry(): void {
@@ -83,7 +94,9 @@ function retry(): void {
             先创建一个看板（例如“课程作业”），再在其中添加任务。看板用于把任务按主题分组。
           </p>
           <CreateBoardForm
+            input-id="new-board-guide-name"
             :disabled="creating"
+            :create-board="createAndOpen"
             @created="created($event.id)"
             @busy="creating = $event"
           />

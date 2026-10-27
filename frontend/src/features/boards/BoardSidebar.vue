@@ -92,6 +92,7 @@ function select(boardId: string): void {
 
     <section class="sidebar-create" aria-label="新建看板">
       <CreateBoardForm
+        input-id="new-board-sidebar-name"
         :disabled="switchingDisabled === true"
         @created="emit('created', $event)"
         @busy="emit('busy', $event)"

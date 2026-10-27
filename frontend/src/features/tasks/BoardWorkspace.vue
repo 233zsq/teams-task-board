@@ -38,9 +38,7 @@ const selectedTask = computed(
   () => state.tasks.data.find((task) => task.id === selectedTaskId.value) ?? null,
 );
 
-type FormState =
-  | { mode: 'create'; status: TaskStatus }
-  | { mode: 'edit'; task: Task; overwriteRisk: boolean };
+type FormState = { mode: 'create'; status: TaskStatus } | { mode: 'edit'; task: Task };
 
 const formState = ref<FormState | null>(null);
 const deleteTarget = ref<Task | null>(null);
@@ -108,14 +106,10 @@ async function openEdit(): Promise<void> {
 
   actionError.value = null;
   try {
-    // Read the latest snapshot before editing; a changed updatedAt warns the
-    // user that saving may overwrite someone else's change.
+    // Read the latest snapshot before editing so the form starts from the
+    // newest values and a deleted task is detected before any typing.
     const latest = await store.fetchTask(task.id);
-    formState.value = {
-      mode: 'edit',
-      task: latest,
-      overwriteRisk: latest.updatedAt !== task.updatedAt,
-    };
+    formState.value = { mode: 'edit', task: latest };
     selectedTaskId.value = null;
   } catch (error) {
     if (error instanceof ApiError && error.code === 'NOT_FOUND') {
@@ -329,7 +323,6 @@ function onSaved(): void {
       :mode="formState.mode"
       :task="formState.mode === 'edit' ? formState.task : null"
       :initial-status="formState.mode === 'create' ? formState.status : 'todo'"
-      :overwrite-risk="formState.mode === 'edit' ? formState.overwriteRisk : false"
       :members="state.members"
       @close="closeForm"
       @saved="onSaved"
