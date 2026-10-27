@@ -1,27 +1,6 @@
-export const ERROR_CODES = {
-  BAD_REQUEST: 'BAD_REQUEST',
-  EDITOR_KEY_REQUIRED: 'EDITOR_KEY_REQUIRED',
-  FORBIDDEN: 'FORBIDDEN',
-  NOT_FOUND: 'NOT_FOUND',
-  METHOD_NOT_ALLOWED: 'METHOD_NOT_ALLOWED',
-  PAYLOAD_TOO_LARGE: 'PAYLOAD_TOO_LARGE',
-  UNSUPPORTED_MEDIA_TYPE: 'UNSUPPORTED_MEDIA_TYPE',
-  VALIDATION_ERROR: 'VALIDATION_ERROR',
-  INTERNAL_ERROR: 'INTERNAL_ERROR',
-  SERVICE_UNAVAILABLE: 'SERVICE_UNAVAILABLE',
-} as const;
-
-export type ErrorCode = keyof typeof ERROR_CODES;
-
-export const ERROR_MESSAGES: Record<ErrorCode, string> = {
-  BAD_REQUEST: '请求格式不正确',
-  EDITOR_KEY_REQUIRED: '需要维护密钥',
-  FORBIDDEN: '请求来源不在允许的主机列表',
-  NOT_FOUND: '资源不存在',
-  METHOD_NOT_ALLOWED: '不支持该操作',
-  PAYLOAD_TOO_LARGE: '请求内容超过 32 KiB',
-  UNSUPPORTED_MEDIA_TYPE: '请求格式不受支持',
-  VALIDATION_ERROR: '请检查输入内容',
-  INTERNAL_ERROR: '服务器内部错误',
-  SERVICE_UNAVAILABLE: '服务暂不可用，请稍后重试',
-};
+/**
+ * Single source for error codes and baseline messages; the shared package
+ * keeps the frontend and backend on the same table (D-25).
+ */
+export { ERROR_CODES, ERROR_MESSAGES } from '@team-plan/shared';
+export type { ErrorCode } from '@team-plan/shared';
