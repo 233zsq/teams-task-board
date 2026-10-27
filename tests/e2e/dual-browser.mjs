@@ -2,19 +2,23 @@
 /**
  * TASK-017 dual-browser end-to-end regression.
  *
- * Drives two independent Microsoft Edge instances against one running backend
- * (same database) and verifies the multi-session behaviour from the spec:
- * manual refresh propagation, full-PUT overwrite with the overwrite prompt,
- * external deletion (no PUT resurrect), responsive column layout and keyboard
- * basics. It never asserts realtime sync or conflict merging.
+ * Drives two independent browser instances (Microsoft Edge by default) against
+ * one running backend (same database) and verifies the multi-session behaviour
+ * from the spec: manual refresh propagation, full-PUT overwrite with the
+ * overwrite prompt, external deletion (no PUT resurrect), responsive column
+ * layout and keyboard basics. It never asserts realtime sync or conflict
+ * merging.
  *
  * Usage:
  *   1. start the backend (optionally with the demo database)
  *   2. npm run test:e2e            (BASE_URL=http://127.0.0.1:3000 by default)
+ *      E2E_BROWSER=chrome npm run test:e2e   (record a Chrome pass instead)
  */
 import { chromium } from 'playwright-core';
 
 const BASE_URL = process.env.BASE_URL ?? 'http://127.0.0.1:3000';
+/** msedge by default; set E2E_BROWSER=chrome to record a Chrome pass instead. */
+const BROWSER_CHANNEL = process.env.E2E_BROWSER ?? 'msedge';
 const BOARD_NAME = `E2E 双浏览器验证 ${new Date().toISOString().slice(11, 19)}`;
 const TASK_TITLE = 'E2E 任务';
 const results = [];
@@ -41,8 +45,8 @@ async function api(method, path, body) {
 
 async function launchBrowser(label) {
   try {
-    const browser = await chromium.launch({ channel: 'msedge', headless: true });
-    return { browser, engine: `msedge ${browser.version()}`, label };
+    const browser = await chromium.launch({ channel: BROWSER_CHANNEL, headless: true });
+    return { browser, engine: `${BROWSER_CHANNEL} ${browser.version()}`, label };
   } catch (error) {
     const fallback = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
     const browser = await chromium.launch({ executablePath: fallback, headless: true });
