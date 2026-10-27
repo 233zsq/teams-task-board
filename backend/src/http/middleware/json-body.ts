@@ -52,8 +52,12 @@ export function requireJsonBody(): RequestHandler {
 const jsonParser = express.json({ limit: '32kb', type: 'application/json' });
 
 const validateJsonBody: RequestHandler = (req, _res, next) => {
-  if (req.body === undefined || req.body === null) {
+  // An absent body is an empty object (D-04); a present JSON `null` is still a
+  // non-object top-level value and must be rejected by assertJsonObject.
+  if (!hasRequestBody(req)) {
     req.body = {};
+    next();
+    return;
   }
 
   try {
