@@ -1,19 +1,22 @@
 # 验证记录索引
 
-本目录保存 P0 核心验收与回归的可复现证据，配合 [checklist.md](../checklist.md) 的 CHECK 编号使用。
-每条记录都写明**被测提交、环境、执行命令、结果与残留项**；截图见 [screenshots](screenshots/)。
+本目录保存 S1～S4 与核心门禁的可复现证据，配合 [checklist.md](../checklist.md) 的 CHECK 编号与
+[tasks.md](../tasks.md) 的切片验收卡使用。每条记录都写明**被测提交、环境、执行命令、结果与残留项**；
+截图见 [screenshots](screenshots/)。切片级的 AI 过程记录见 [ai-log.md](../ai-log.md)。
 
 ## 被测版本与环境（2026-10-27）
 
 | 项 | 值 |
 | --- | --- |
-| 被测提交 | `c077db9`（P0 功能与回归脚本；本目录文档在其后单独提交） |
+| 被测代码提交 | `c077db9`（S1～S4 功能与回归脚本；文档与验证记录在其后合并，agent 记录见 `ai-log.md`） |
+| 切片对照 | S1→TASK-015 记录；S2/S3→双浏览器与 API 回归记录；S4→TASK-017/018/032 记录 |
 | Node / npm | v24.18.0 / 11.16.0 |
 | 操作系统 | Windows 10.0.26200（x64） |
 | 浏览器 | Microsoft Edge 156.0.4314.42（playwright-core 1.64.1 驱动，headless） |
 | 内嵌浏览器 | Chromium 内核（UA `Chrome/146.0.7680.80`，ZCode 内置） |
 | 数据库 | SQLite（better-sqlite3 11.10.0）；`data/team-plan-demo.sqlite` 为可丢弃演示库 |
 | 本地未安装 | Google Chrome（CHECK-029/030 的 Chrome 品牌项待课程机补验，命令见下文） |
+| 独立验收 | **未进行**：按切片规则需非主驾成员按原 CHECK 复验 |
 
 ## 记录清单
 
