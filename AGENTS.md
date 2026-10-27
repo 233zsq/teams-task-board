@@ -9,12 +9,13 @@
 - 修改交互或样式：查看 `prototype/screenshots/` 中对应场景和 `prototype/styles/global.css`；原型是目标效果，不是已运行应用。
 - 修改架构、配置、数据库或部署：读 `architecture.md` 和实际实现；规划文字不能覆盖代码事实。
 - 验证或验收切片：读 `checklist.md`，执行对应当前提交的 CHECK。
+- 补验浏览器或打包候选版本：读 `verification/RELEASE-candidate.md`，使用隔离库并记录候选提交和真实结果。
 - 使用 AI 完成一轮生成、诊断或修复：在 `ai-log.md` 留下本轮简短记录。
 
 ## 当前事实
 
 - 已有 Node.js + TypeScript + Express 5 后端（骨架、健康检查、请求/安全边界、成员/看板/任务 API）、`better-sqlite3` 数据库初始化/迁移与演示数据命令。
-- 已有 shared 契约包（ESM + CJS）、Vue 3 前端工作区、单元/集成测试 186 项、一键 HTTP 回归脚本与双浏览器 E2E 脚本。
+- 已有 shared 契约包（ESM + CJS）、Vue 3 前端工作区、shared/backend/frontend 测试、一键 HTTP 回归与双浏览器 E2E；当前命令和版本从 package scripts 与验证记录读取。
 - S1～S4 的实现与自测已完成（2026-10-27，被测代码提交 `c077db9`），非主驾独立验收尚未进行；S5 未选择；RELEASE 待打包与发布标签。证据入口见 `verification/`。
 - 命令与依赖版本以根 `package.json`、各工作区 `package.json` 和锁文件为准。运行 `npm run` 可查看当前脚本，不执行文档中尚未提供的命令。
 

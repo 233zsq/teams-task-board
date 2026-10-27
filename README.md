@@ -16,7 +16,7 @@
 - Express 后端：健康检查、请求与安全边界、成员/看板/任务 API、统一错误映射；
 - SQLite P0 表、固定成员种子、连续迁移编号与校验和、演示数据与重置命令；
 - Vue 3 前端：看板导航、三列任务视图、详情、表单、状态/删除/日期、刷新与竞态防护、健康门禁、响应式与键盘操作；
-- 单元/集成测试 186 项、一键 HTTP 回归（50 项）、双浏览器 E2E 脚本（22 项）；
+- 单元/集成测试 188 项、一键 HTTP 回归（50 项）、双浏览器 E2E 脚本（22 项）；
 - 实测记录与截图：[verification/](verification/README.md)。
 
 CHECK-001～043 已按候选提交执行并记录（41 项通过；CHECK-029/030 已补齐 Chrome/Edge 自动化，仍待人工独立复验），
@@ -82,7 +82,7 @@ npm start
 
 ```powershell
 npm run typecheck        # 三个包类型检查
-npm test                 # shared + backend + frontend（186 项）
+npm test                 # shared + backend + frontend（188 项）
 npm run check:api        # 一键 HTTP 契约与安全回归（临时库，50 项）
 npm run test:e2e         # 双浏览器 E2E（需服务已启动；E2E_BROWSER=chrome 可换 Chrome）
 npm run test:e2e:launcher # 浏览器选择与禁止静默回退的回归

@@ -27,7 +27,7 @@
 | HTTP 后端 | Node.js、TypeScript strict、Express 5 | 已实现 `createApp`/`server` 分离、健康检查、安全边界、成员/看板/任务 API |
 | 持久化 | `better-sqlite3`、参数化 SQL、无 ORM | 已实现连接、约束、初始化、迁移、固定成员种子与演示数据 |
 | 仓库 | npm workspaces、单一根锁文件；后续增加 frontend/shared | 已包含 shared/backend/frontend 三个工作区与统一锁文件 |
-| 测试 | Vitest、Supertest、临时真实 SQLite；后续增加浏览器回归 | 已有 186 项单元/集成测试、一键 HTTP 回归与双浏览器 E2E 脚本 |
+| 测试 | Vitest、Supertest、临时真实 SQLite；后续增加浏览器回归 | 已有 188 项单元/集成测试、一键 HTTP 回归与双浏览器 E2E 脚本 |
 
 当前实测环境为 Node.js 24.18.0、npm 11.16.0，`engines >=18.17`；课程机采用其他版本时需复验。版本与命令以实际 `package.json`、锁文件和 README 为准。
 

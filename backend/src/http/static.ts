@@ -41,6 +41,8 @@ export function serveFrontendBuild(app: Express, options: StaticSpaOptions): voi
     }
 
     res.setHeader('Cache-Control', 'no-store');
-    res.sendFile(indexFile);
+    // Keep the trusted checkout path in root: sendFile's dotfile checks apply
+    // to the requested file, even if the checkout lives under .codex/.artifacts.
+    res.sendFile('index.html', { root: options.directory });
   });
 }
