@@ -17,7 +17,7 @@
 
 - 已有 Node.js + TypeScript + Express 5 后端（骨架、健康检查、请求/安全边界、成员/看板/任务 API）、`better-sqlite3` 数据库初始化/迁移与演示数据命令。
 - 已有 shared 契约包（ESM + CJS）、Vue 3 前端工作区、shared/backend/frontend 测试、一键 HTTP 回归与双浏览器 E2E；当前命令和版本从 package scripts 与验证记录读取。
-- S1～S4 的实现与自测已完成（2026-10-27，被测代码提交 `c077db9`），非主驾独立验收尚未进行；S5 未选择；RELEASE 待打包与发布标签。证据入口见 `verification/`。
+- S1～S4 的实现与自测已完成；受密码保护的公网演示已上线，当前来源和状态读 `deploy/DEPLOYMENT.md`。S5 未选择，组员独立复验未执行；用户明确其不阻塞本次部署。历史及补验材料见 `verification/`。
 - 命令与依赖版本以根 `package.json`、各工作区 `package.json` 和锁文件为准。运行 `npm run` 可查看当前脚本，不执行文档中尚未提供的命令。
 
 ## 工作循环
