@@ -1,33 +1,34 @@
 # 团队任务协作看板
 
-“AI生成式软件”课程的四人协作项目，目标是实现轻量版 Trello：通过多个看板管理任务，展示负责人、截止日期和完成状态。
+“AI生成式软件”课程的四人协作项目。通过多个看板管理任务，在待办、进行中、已完成三列中查看进度，并维护负责人和截止日期。
 
 项目采用**人定义场景与验收、AI 生成端到端切片、机器回归、人独立复验**的开发方式。分工和进度不看代码行数，而看可运行、可演示的用户结果。
 
-## 当前状态
+## 在线演示
 
-**S0 已完成；S1～S4 的实现与自测完成；受密码保护的公网演示已上线（2026-10-27）。S5 未选择；组员独立验收尚未进行，按用户要求不阻塞本次部署。**
+**访问：<https://tboard.bigdogaaa.cn/>**
 
-仓库目前包含：
+站点于 2026-10-27 上线，使用 HTTPS 和统一账号密码保护全部页面与 API。访问凭据由项目维护人单独提供；持有凭据的成员均可编辑同一工作区。
 
-- 已评审的产品契约、架构与验证清单；切片计划、AI 记录与仓库代理约束；
-- 原型截图和样式参考；
-- shared 契约包（类型、错误码、文本/日期纯规则，ESM + CJS 双产物）；
-- Express 后端：健康检查、请求与安全边界、成员/看板/任务 API、统一错误映射；
-- SQLite P0 表、固定成员种子、连续迁移编号与校验和、演示数据与重置命令；
-- Vue 3 前端：看板导航、三列任务视图、详情、表单、状态/删除/日期、刷新与竞态防护、健康门禁、响应式与键盘操作；
-- 单元/集成测试 188 项、一键 HTTP 回归（50 项）、双浏览器 E2E 脚本（22 项）；
-- 实测记录与截图：[verification/](verification/README.md)。
+首次进入后，创建一个看板，再添加任务即可开始使用。任务数据保存在服务器，其他成员的修改通过“刷新看板”读取。
 
-CHECK-001～043 已按候选提交执行并记录（41 项通过；CHECK-029/030 已补齐 Chrome/Edge 自动化，仍待人工独立复验），
-逐条结论见 [checklist.md](checklist.md) 与 [verification/TASK-032-final-regression.md](verification/TASK-032-final-regression.md)。
-S5（优先级、筛选、拖拽、分享）未选择、未实施。
+![公网运行界面](verification/screenshots/public-desktop-20261027.png)
 
-最新补验与候选包说明见 [RELEASE-candidate.md](verification/RELEASE-candidate.md)：Chrome/Edge 完整尺寸操作、键盘、慢请求与故障恢复已补跑；候选包可通过 `npm run package:candidate` 生成，正式验收与发布仍待完成。
+## 已实现功能
 
-用户已确认继续做受密码保护的小组公网演示，独立人工复验先留作待办。部署方案与实际状态见 [deploy/README.md](deploy/README.md)、[部署记录](deploy/DEPLOYMENT.md)：Nginx 统一密码保护全部页面与 API，Node 仅回环监听，数据独立持久化并定时备份。
+- 创建、查看和切换多个看板，支持直接打开看板链接。
+- 新建、查看、编辑和删除任务，在三种状态间切换。
+- 从预置成员 A～D 中选择负责人，设置截止日期并显示逾期提示。
+- SQLite 持久化、手动刷新、错误恢复、窄屏适配与键盘操作。
+- 公网 HTTPS、整站访问密码、服务开机自启和每日数据库备份。
 
-访问：**<https://tboard.bigdogaaa.cn/>**。账号 `team`，口令通过独立私有文件交付，不写入仓库；进入后可创建第一个看板。
+优先级、筛选、拖拽和只读分享未纳入本次交付；个人登录、按用户权限及实时同步也不在当前范围内。
+
+## 验证与交付状态
+
+本轮已记录 188 项单元/集成测试、50 项 API 回归、22 项跨浏览器 E2E，以及 12 项公网部署检查通过；类型检查和生产构建通过，部署时生产依赖审计为 0 项。详细环境、提交和证据见 [验证记录](verification/README.md) 与 [公网部署记录](deploy/DEPLOYMENT.md)。
+
+S1～S4 的实现与自测已完成，组员独立人工验收尚未执行，按用户决定不阻塞本次公网演示。历史 CHECK 结论保留在 [验证清单](checklist.md)，候选包阶段的补验与打包方式见 [候选交付记录](verification/RELEASE-candidate.md)。
 
 ## 获取项目
 
@@ -98,11 +99,9 @@ npm run check:browser
 - 数据库未初始化、结构不兼容或配置无效时，服务明确失败，不回退到内存库或另一个空库。
 - 配置键以 `.env.example` 为入口；`.env` 和本地数据库不提交仓库。
 
-## 预期效果
+## 界面与原型参考
 
-![看板三列视图（预期效果）](prototype/screenshots/board.png)
-
-原型用于给 AI 与评审提供视觉和交互目标，不代表功能已经运行。更多场景见 [prototype/screenshots](prototype/screenshots/)，样式参考 [global.css](prototype/styles/global.css)。
+原型是开发时的视觉与交互参考，保留在 [prototype/screenshots](prototype/screenshots/)；样式参考 [global.css](prototype/styles/global.css)。当前运行效果以上方公网截图和实测记录为准。
 
 实际运行界面（2026-10-27 实测）：[看板与任务卡片](verification/screenshots/board-with-task.png)、
 [任务详情](verification/screenshots/task-detail.png)、[360 窄屏](verification/screenshots/narrow-360.png)、

@@ -8,19 +8,19 @@
 
 ## 1. 当前基线
 
-以下历史结果继续有效，不因流程重构而重新开工。这里的“已完成”只指对应基础能力，不代表看板业务已经完成。
+基础能力、业务实现和公网交付的当前记录如下。历史任务不重新开工，独立人工验收保留实际状态。
 
 | 基线 | 已完成事实 | 证据 | 状态 |
 | --- | --- | --- | --- |
 | S0：契约与后端基础 | TASK-001：2026-10-21 四人确认 P0 契约；TASK-002：后端骨架、健康检查、请求与安全边界；TASK-005：P0 数据库、固定成员种子、迁移编号与校验和 | 原 TASK-002 记录 36 项测试；TASK-005 合并后记录 50 项测试，typecheck/build 通过；当前命令见 [README](README.md) | 已完成（2026-10-21） |
-| S1：最小真实闭环 | 共享契约与纯规则、统一 API 客户端、看板/成员/任务创建与读取 API、三列与详情 UI、真实 SQLite | 186 项测试、`check:api` 50/50、浏览器实测；[TASK-015 联调记录](verification/TASK-015-first-integration.md)、[TASK-032 回归](verification/TASK-032-final-regression.md) | 实现与自测完成（2026-10-27），待非主驾独立验收 |
+| S1：最小真实闭环 | 共享契约与纯规则、统一 API 客户端、看板/成员/任务创建与读取 API、三列与详情 UI、真实 SQLite | 本轮累计 188 项测试、API 50/50、公网 12/12；[历史联调](verification/TASK-015-first-integration.md)、[公网部署](deploy/DEPLOYMENT.md) | 实现、自测与部署完成（2026-10-27）；独立人工验收未执行 |
 | S2：看板体验 | 列表排序、同名区分、默认选中、深链、404、骨架与失败重试、切板竞态防护 | `workspace.test.ts`、`home-page.test.ts`、Edge 实测（CHECK-003/004） | 同上 |
 | S3：任务维护 | 完整 PUT、编辑、删除、六种状态、负责人、日期与逾期、覆盖提示、键盘与 360/768/1366 适配 | `tasks-api.test.ts`、`task-form.test.ts`、`status-delete.test.ts`、双浏览器 E2E；[浏览器补验](verification/RELEASE-candidate.md) | 同上；Chrome/Edge 自动化已补齐，CHECK-029/030 待人工独立复验 |
 | S4：协同与交付加固 | 双浏览器刷新、失败恢复、API/安全回归、备份恢复、演示数据与一键脚本 | [TASK-017](verification/TASK-017-dual-browser.md)、[TASK-018](verification/TASK-018-api-regression.md)、[TASK-032](verification/TASK-032-final-regression.md) | 同上 |
 
-当前仓库已包含业务 API、Vue 前端、shared 包、浏览器端到端脚本与回归记录；S1～S4 的实现与自测完成，
-**独立验收（非主驾按原 CHECK 复验）尚未进行**，S5 未选择，RELEASE 仅完成干净环境复演、备份恢复与规模观察，
-本轮新增固定提交候选打包工具和浏览器补验，使用方式见 [候选交付说明](verification/RELEASE-candidate.md)；正式发布标签（TASK-035）及独立验收仍待做。CHECK-001～043 实测结论见 [checklist.md](checklist.md) 与 [verification/](verification/README.md)。
+S1～S4 的实现与自测已完成，候选包和受密码保护的公网演示已交付：**<https://tboard.bigdogaaa.cn/>**。HTTPS、统一访问密码、服务自启与每日备份均已启用，实际版本见 [部署记录](deploy/DEPLOYMENT.md)。
+
+S5 未选择；组员独立人工验收和正式课程发布标签尚未执行，按用户要求不阻塞本次公网演示。CHECK-001～043 的原始结论见 [checklist.md](checklist.md)，历史候选补验与打包方式见 [候选交付记录](verification/RELEASE-candidate.md)。
 
 ## 2. 每轮怎么工作
 
