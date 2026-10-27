@@ -1,0 +1,11 @@
+[Unit]
+Description=Consistent backup of the team task board database
+After=team-task-board.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/team-task-board/current/deploy/backup.py
+User=root
+UMask=0077
+Nice=10
+IOSchedulingClass=idle

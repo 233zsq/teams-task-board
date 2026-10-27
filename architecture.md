@@ -45,6 +45,8 @@ flowchart LR
 
 开发时 Vite 将 `/api` 代理到 `127.0.0.1:3000`；代理目标使用 IPv4 回环地址，避免 Windows 上 `localhost` 的 IPv6 解析差异。构建演示时 Express 同源提供前端静态资源和 API，API 路由先于 SPA 回退，未知 `/api` 始终返回 JSON 404。
 
+受密码保护的公网演示为用户于 2026-10-27 新增的部署范围：Nginx 终止 TLS 并对全部页面/API 做 Basic Auth，再代理至 `127.0.0.1:4100`。Node 使用独立无登录服务账号，代码版本与 `/var/lib` 中的 SQLite 分离；systemd 维护进程与在线备份定时任务。部署层统一密码不改变 P0 的编辑权限语义，具体配置及回退边界见 [deploy/README.md](deploy/README.md)。
+
 模块依赖保持单向：
 
 ```text

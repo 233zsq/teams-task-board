@@ -1,0 +1,28 @@
+[Unit]
+Description=Team task board
+After=network.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=teamboard
+Group=teamboard
+WorkingDirectory=/opt/team-task-board/current
+EnvironmentFile=/etc/team-task-board/runtime.env
+ExecStart=/usr/local/bin/node /opt/team-task-board/current/backend/dist/server.js
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=15
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/team-task-board
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+MemoryMax=512M
+
+[Install]
+WantedBy=multi-user.target

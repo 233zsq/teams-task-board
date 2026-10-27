@@ -8,6 +8,7 @@
 - 修改业务行为、字段、API 或错误：读 `spec.md` 中对应 REQ 及第 4、8、9 节；它是当前业务与 API 契约的唯一事实来源。
 - 修改交互或样式：查看 `prototype/screenshots/` 中对应场景和 `prototype/styles/global.css`；原型是目标效果，不是已运行应用。
 - 修改架构、配置、数据库或部署：读 `architecture.md` 和实际实现；规划文字不能覆盖代码事实。
+- 部署公网演示：先读 `deploy/README.md`；用户已授权不等待组员独立复验，仍执行自动门禁及上线检查，人工复验保留真实状态。
 - 验证或验收切片：读 `checklist.md`，执行对应当前提交的 CHECK。
 - 补验浏览器或打包候选版本：读 `verification/RELEASE-candidate.md`，使用隔离库并记录候选提交和真实结果。
 - 使用 AI 完成一轮生成、诊断或修复：在 `ai-log.md` 留下本轮简短记录。
