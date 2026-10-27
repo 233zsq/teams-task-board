@@ -1,5 +1,11 @@
 param([string]$OutputDirectory = '')
 $ErrorActionPreference = 'Stop'
+function Get-Sha256([string]$FilePath) {
+    $stream = [IO.File]::OpenRead($FilePath)
+    $algorithm = [Security.Cryptography.SHA256]::Create()
+    try { return [BitConverter]::ToString($algorithm.ComputeHash($stream)).Replace('-', '').ToLowerInvariant() }
+    finally { $stream.Dispose(); $algorithm.Dispose() }
+}
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 Push-Location $root
 $stage = $null
@@ -35,7 +41,7 @@ try {
         $target = Join-Path $packageRoot $relative
         New-Item -ItemType Directory -Path (Split-Path -Parent $target) -Force | Out-Null
         Copy-Item -LiteralPath $source -Destination $target
-        $manifestFiles += [ordered]@{ path = $relative; sha256 = (Get-FileHash -LiteralPath $target -Algorithm SHA256).Hash.ToLowerInvariant() }
+        $manifestFiles += [ordered]@{ path = $relative; sha256 = Get-Sha256 $target }
     }
     $manifest = [ordered]@{
         name = $name; version = $version; sourceCommit = $revision
@@ -48,7 +54,7 @@ try {
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $zip = Join-Path $OutputDirectory ("$name-" + [DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss') + '.zip')
     [IO.Compression.ZipFile]::CreateFromDirectory($stage, $zip, [IO.Compression.CompressionLevel]::Optimal, $false)
-    $hash = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+    $hash = Get-Sha256 $zip
     "$hash  $([IO.Path]::GetFileName($zip))" | Set-Content -LiteralPath ($zip + '.sha256') -Encoding ASCII
     Write-Output "Candidate: $zip"
     Write-Output "Source commit: $revision"
