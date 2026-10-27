@@ -107,8 +107,17 @@ test "$healthy" = 1 || { journalctl -u team-task-board --no-pager -n 15; exit 1;
 sed -e "s/__DOMAIN__/$domain/g" -e "s/__PORT__/$port/g" "$release/deploy/nginx.conf.template" > "$config"
 nginx -t
 systemctl reload nginx
-status=$(curl --silent --show-error --resolve "$domain:443:127.0.0.1" -o /dev/null -w '%{http_code}' "https://$domain/")
-test "$status" = 401 || { echo 'Public authentication gate check failed' >&2; exit 1; }
+https_ready=0
+for attempt in $(seq 1 12); do
+    # A graceful reload can briefly leave old workers serving the previous
+    # default certificate. Retry without ever disabling TLS verification.
+    if status=$(curl --noproxy '*' --silent --show-error --max-time 2 --resolve "$domain:443:127.0.0.1" -o /dev/null -w '%{http_code}' "https://$domain/" 2>"$backup/tls-probe.err"); then
+        if test "$status" = 401; then https_ready=1; break; fi
+    fi
+    sleep 0.5
+done
+test "$https_ready" = 1 || { cat "$backup/tls-probe.err" >&2; echo 'Public TLS/authentication gate check failed' >&2; exit 1; }
+printf 'HTTPS_GATE_READY_ATTEMPT=%s\n' "$attempt"
 systemctl enable --now team-task-board-backup.timer
 systemctl start team-task-board-backup.service
 success=1

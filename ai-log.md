@@ -203,6 +203,7 @@
 - **实现：** 新增独立 Nginx 配置、无登录服务账号 systemd 单元、固定来源提交版本目录、独立持久库、TLS/口令权限边界和 SQLite online backup 定时任务。脚本在健康与鉴权检查失败时恢复本项目旧入口和配置；不清理持久数据。
 - **生产依赖修正：** 首次 `npm audit --omit=dev` 为 3 high（Vue/SSR 与 body-parser）；同系列更新 Vue 至 3.5.44、body-parser 至 2.4.0 后为 0 项。不做开发工具的大版本迁移，生产只安装运行依赖。
 - **服务器首次预检查：** 压缩包 SHA256 正确，但 Git archive 在 Windows 默认换行设置下导出的 shell 脚本含 CRLF，Linux `bash -n` 拒绝；此时尚未安装服务或切换 Nginx。为 deploy 目录新增明确的 LF 属性，重新固定提交并打包，不绕过服务器预检查。
+- **首次激活与回退：** 证书安装、回环健康与 Nginx 配置校验通过，但 reload 后立即探测曾命中旧 worker 的默认证书；脚本自动停本项目服务并撤回新站点配置，原站点仍为 200/200/302。部署脚本改为有限重试，并显式禁用代理干扰；始终保留 TLS 校验，不使用 insecure 绕过。
 - **验证与结果：** 具体上线提交、服务器安装与真实 HTTP 检查结果在 [deploy/DEPLOYMENT.md](deploy/DEPLOYMENT.md) 逐步填写；只完成准备时不写成已上线。必要自动检查照常执行，不要求用户另行完成独立人工复验。
 - **秘密处理：** TLS 私钥、站点访问口令只放 `.artifacts/deploy-private/` 或服务器权限受限目录，不写入 Git、报告或工具输出；初始口令独立文件交付。
 
