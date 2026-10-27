@@ -107,3 +107,25 @@ export function formatBusinessDateTime(
 export function isUuid(value: string): boolean {
   return UUID_PATTERN.test(value);
 }
+
+/** Format an instant as `HH:mm:ss` in the business time zone. */
+export function formatBusinessTime(
+  instant: Date | number,
+  timeZone: string = BUSINESS_TIME_ZONE,
+): string {
+  const date = instant instanceof Date ? instant : new Date(instant);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(date);
+
+  const pick = (type: string): string => parts.find((part) => part.type === type)?.value ?? '';
+  return `${pick('hour')}:${pick('minute')}:${pick('second')}`;
+}

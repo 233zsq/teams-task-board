@@ -1,4 +1,4 @@
-import type { TaskFieldInput } from '../contracts/types';
+import type { Task, TaskFieldInput } from '../contracts/types';
 import { FIELD_MESSAGES } from './messages';
 import { invalid, valid, type FieldErrors, type ValidationResult } from './result';
 import { isUuid, isValidDateString } from './date';
@@ -8,6 +8,24 @@ import {
   normalizeTaskDescription,
   normalizeTaskTitle,
 } from './text';
+
+/**
+ * Build the full PUT body from an existing task. P0 has no status-only route:
+ * status buttons and ordinary edits both submit all five business fields.
+ */
+export function taskToFieldInput(
+  task: Task,
+  patch: Partial<TaskFieldInput> = {},
+): TaskFieldInput {
+  return {
+    title: task.title,
+    description: task.description,
+    dueDate: task.dueDate,
+    assigneeId: task.assigneeId,
+    status: task.status,
+    ...patch,
+  };
+}
 
 function hasOwn(body: Record<string, unknown>, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(body, key);
