@@ -1,3 +1,4 @@
+import { isUuid } from '@team-plan/shared';
 import { AppError } from './errors';
 
 const DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
@@ -40,6 +41,19 @@ export function assertAllowedKeys(
       throw new AppError(400, 'BAD_REQUEST');
     }
   }
+}
+
+/** Coerce an Express path parameter (wildcard-typed) to a plain string. */
+export function pathParam(value: string | string[] | undefined): string {
+  return typeof value === 'string' ? value : '';
+}
+
+/** Path UUIDs: a malformed value is a request error (400), not a missing resource. */
+export function assertUuidParam(value: string): string {
+  if (!isUuid(value)) {
+    throw new AppError(400, 'BAD_REQUEST');
+  }
+  return value;
 }
 
 export interface ParsedQuery {

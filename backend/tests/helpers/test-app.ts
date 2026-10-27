@@ -13,6 +13,8 @@ export interface TestAppOptions {
   projectRoot?: string;
   migrate?: boolean;
   migrationsDir?: string;
+  now?: () => Date;
+  generateId?: () => string;
 }
 
 export interface TestApp {
@@ -55,6 +57,8 @@ export function makeTestApp(options: TestAppOptions = {}): TestApp {
     config,
     db,
     logger: memory.logger,
+    ...(options.now === undefined ? {} : { now: options.now }),
+    ...(options.generateId === undefined ? {} : { generateId: options.generateId }),
     ...(migrate
       ? { schema: { assertCompatible: () => assertSchemaCompatible(db.raw, migrationsDir) } }
       : {}),

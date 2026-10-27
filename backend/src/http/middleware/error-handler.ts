@@ -1,5 +1,7 @@
 import type { ErrorRequestHandler } from 'express';
+import { FIELD_MESSAGES } from '@team-plan/shared';
 import { isDatabaseUnavailable } from '../../db/errors';
+import { AssigneeNotFoundError, NotFoundError } from '../../modules/errors';
 import { AppError } from '../errors';
 import { redactPath, type Logger } from '../logger';
 import { ERROR_MESSAGES, type ErrorCode } from '../messages';
@@ -11,6 +13,18 @@ export interface MappedError {
 }
 
 export function mapError(error: unknown): MappedError {
+  if (error instanceof NotFoundError) {
+    return { status: 404, code: 'NOT_FOUND' };
+  }
+
+  if (error instanceof AssigneeNotFoundError) {
+    return {
+      status: 422,
+      code: 'VALIDATION_ERROR',
+      fields: { assigneeId: FIELD_MESSAGES.ASSIGNEE_NOT_FOUND },
+    };
+  }
+
   if (error instanceof AppError) {
     return {
       status: error.status,
