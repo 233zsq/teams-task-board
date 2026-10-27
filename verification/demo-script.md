@@ -38,7 +38,7 @@ $env:DATABASE_PATH="data/team-plan-demo.sqlite"; $env:NODE_ENV="production"; npm
 
 **未选做，演示时明确说明“未实施”**：优先级（REQ-016）、筛选（REQ-017）、拖拽排序（REQ-018）、
 只读分享（REQ-019）均未实现，健康响应中四个开关为 `false`，界面不显示对应控件；
-CHECK-044～057 保持未勾选。若时间允许再按 [tasks.md](tasks.md) M4 章节立项。
+CHECK-044～057 保持未勾选。若时间允许再按 [tasks.md](../tasks.md) M4 章节立项。
 
 ## 四、故障恢复步骤
 

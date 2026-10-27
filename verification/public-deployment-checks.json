@@ -1,0 +1,54 @@
+{
+  "url": "https://tboard.bigdogaaa.cn",
+  "checkedUtc": "2026-10-27T14:12:50.001Z",
+  "results": [
+    {
+      "name": "anonymous / requires authentication",
+      "status": "passed"
+    },
+    {
+      "name": "anonymous /api/v1/health requires authentication",
+      "status": "passed"
+    },
+    {
+      "name": "anonymous /api/v1/members requires authentication",
+      "status": "passed"
+    },
+    {
+      "name": "anonymous /api/v1/boards requires authentication",
+      "status": "passed"
+    },
+    {
+      "name": "anonymous /boards/00000000-0000-4000-8000-000000000001 requires authentication",
+      "status": "passed"
+    },
+    {
+      "name": "wrong password remains unauthorized",
+      "status": "passed"
+    },
+    {
+      "name": "anonymous write is blocked",
+      "status": "passed"
+    },
+    {
+      "name": "authenticated homepage and built assets are available",
+      "status": "passed"
+    },
+    {
+      "name": "authenticated health and SQLite member/board reads succeed",
+      "status": "passed"
+    },
+    {
+      "name": "deep link serves SPA and unknown API retains JSON 404",
+      "status": "passed"
+    },
+    {
+      "name": "HTTP redirects to HTTPS preserving path and query",
+      "status": "passed"
+    },
+    {
+      "name": "authenticated browser loads real empty workspace without runtime errors",
+      "status": "passed"
+    }
+  ]
+}

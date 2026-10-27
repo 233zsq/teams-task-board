@@ -1,6 +1,6 @@
 # 团队任务协作看板：系统架构
 
-版本：0.6｜日期：2026-10-27｜状态：S0 已完成；S1～S4 的实现与自测完成（被测代码提交 `c077db9`，证据见 [verification/](verification/README.md)），S5 未选择，RELEASE 待打包与发布标签
+版本：0.7｜日期：2026-10-27｜状态：P0 受密码保护的公网演示已上线，来源与状态见 [部署记录](deploy/DEPLOYMENT.md)；S5 未选择，组员独立复验按用户要求不阻塞本次部署
 
 本文解释系统边界、关键运行语义和技术决策。用户场景、字段、业务规则、数据库约束与 API 契约以 [spec.md](spec.md) 为唯一事实来源；切片分工见 [tasks.md](tasks.md)，验收见 [checklist.md](checklist.md)。本文不复制这些契约。
 
@@ -27,23 +27,25 @@
 | HTTP 后端 | Node.js、TypeScript strict、Express 5 | 已实现 `createApp`/`server` 分离、健康检查、安全边界、成员/看板/任务 API |
 | 持久化 | `better-sqlite3`、参数化 SQL、无 ORM | 已实现连接、约束、初始化、迁移、固定成员种子与演示数据 |
 | 仓库 | npm workspaces、单一根锁文件；后续增加 frontend/shared | 已包含 shared/backend/frontend 三个工作区与统一锁文件 |
-| 测试 | Vitest、Supertest、临时真实 SQLite；后续增加浏览器回归 | 已有 186 项单元/集成测试、一键 HTTP 回归与双浏览器 E2E 脚本 |
+| 测试 | Vitest、Supertest、临时真实 SQLite；后续增加浏览器回归 | 已有 188 项单元/集成测试、一键 HTTP 回归与双浏览器 E2E 脚本 |
 
-当前记录环境为 Node.js 18.17.1，`engines >=18.17`；Node 22 LTS 是待课程机复核的目标基线。版本与命令以实际 `package.json`、锁文件和 README 为准。
+当前实测环境为 Node.js 24.18.0、npm 11.16.0，`engines >=18.17`；课程机采用其他版本时需复验。版本与命令以实际 `package.json`、锁文件和 README 为准。
 
 ## 3. 运行视图与依赖方向
 
 ```mermaid
 flowchart LR
     B["浏览器：页面与表单"] -->|"同源页面与 /api/v1 JSON"| W["Web 入口"]
-    W --> F["前端静态资源与 SPA 路由（目标）"]
+    W --> F["前端静态资源与 SPA 路由"]
     W --> H["Express HTTP 入口（当前）"]
-    H --> S["看板 / 成员 / 任务业务模块（目标）"]
+    H --> S["看板 / 成员 / 任务业务模块"]
     S --> D["数据库模块（当前）"]
     D --> Q[("SQLite 文件")]
 ```
 
 开发时 Vite 将 `/api` 代理到 `127.0.0.1:3000`；代理目标使用 IPv4 回环地址，避免 Windows 上 `localhost` 的 IPv6 解析差异。构建演示时 Express 同源提供前端静态资源和 API，API 路由先于 SPA 回退，未知 `/api` 始终返回 JSON 404。
+
+受密码保护的公网演示为用户于 2026-10-27 新增的部署范围：Nginx 终止 TLS 并对全部页面/API 做 Basic Auth，再代理至 `127.0.0.1:4100`。Node 使用独立无登录服务账号，代码版本与 `/var/lib` 中的 SQLite 分离；systemd 维护进程与在线备份定时任务。部署层统一密码不改变 P0 的编辑权限语义，具体配置及回退边界见 [deploy/README.md](deploy/README.md)。
 
 模块依赖保持单向：
 

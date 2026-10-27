@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-27T11:27:00.543Z",
+  "results": [
+    {
+      "name": "跨浏览器协同、覆盖与删除（现有双浏览器 E2E）",
+      "status": "passed"
+    },
+    {
+      "name": "chrome 1366px 完整建板/任务/编辑/状态/删除",
+      "status": "passed"
+    },
+    {
+      "name": "chrome 768px 完整建板/任务/编辑/状态/删除",
+      "status": "passed"
+    },
+    {
+      "name": "chrome 360px 完整建板/任务/编辑/状态/删除",
+      "status": "passed"
+    },
+    {
+      "name": "chrome 键盘提交/Tab 环绕/Escape 焦点恢复/回车取消删除",
+      "status": "passed"
+    },
+    {
+      "name": "chrome 422/500/503/10s 超时/已落库响应丢失",
+      "status": "passed"
+    },
+    {
+      "name": "chrome 真实 HTTP 慢响应切板隔离",
+      "status": "passed"
+    },
+    {
+      "browser": "chrome",
+      "version": "156.0.8078.47",
+      "status": "passed"
+    },
+    {
+      "name": "msedge 1366px 完整建板/任务/编辑/状态/删除",
+      "status": "passed"
+    },
+    {
+      "name": "msedge 768px 完整建板/任务/编辑/状态/删除",
+      "status": "passed"
+    },
+    {
+      "name": "msedge 360px 完整建板/任务/编辑/状态/删除",
+      "status": "passed"
+    },
+    {
+      "name": "msedge 键盘提交/Tab 环绕/Escape 焦点恢复/回车取消删除",
+      "status": "passed"
+    },
+    {
+      "name": "msedge 422/500/503/10s 超时/已落库响应丢失",
+      "status": "passed"
+    },
+    {
+      "name": "msedge 真实 HTTP 慢响应切板隔离",
+      "status": "passed"
+    },
+    {
+      "browser": "msedge",
+      "version": "156.0.4314.42",
+      "status": "passed"
+    }
+  ]
+}
