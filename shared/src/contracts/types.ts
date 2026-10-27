@@ -1,0 +1,55 @@
+/** Shared API contract types. Field names and shapes mirror spec.md §9. */
+
+export type TaskStatus = 'todo' | 'doing' | 'done';
+
+export interface Board {
+  id: string;
+  name: string;
+  createdAt: string;
+}
+
+export interface Member {
+  id: string;
+  displayName: string;
+}
+
+export interface Task {
+  id: string;
+  boardId: string;
+  title: string;
+  description: string;
+  dueDate: string | null;
+  assigneeId: string | null;
+  status: TaskStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** The five complete business fields submitted by PUT and produced by POST. */
+export interface TaskFieldInput {
+  title: string;
+  description: string;
+  dueDate: string | null;
+  assigneeId: string | null;
+  status: TaskStatus;
+}
+
+export interface CreateBoardInput {
+  name: string;
+}
+
+export interface FeatureFlags {
+  priority: boolean;
+  filters: boolean;
+  ordering: boolean;
+  sharing: boolean;
+}
+
+export interface HealthData {
+  status: 'ok';
+  features: FeatureFlags;
+}
+
+export interface DataResponse<T> {
+  data: T;
+}

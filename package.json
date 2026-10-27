@@ -3,16 +3,34 @@
   "version": "0.1.0",
   "private": true,
   "workspaces": [
-    "backend"
+    "shared",
+    "backend",
+    "frontend"
   ],
   "engines": {
     "node": ">=18.17"
   },
   "scripts": {
+    "build:shared": "npm run build -w shared",
+    "dev:shared": "npm run build -w shared -- --watch --preserveWatchOutput",
     "dev:backend": "npm run dev -w backend",
-    "build:backend": "npm run build -w backend",
-    "test:backend": "npm run test -w backend",
-    "typecheck": "npm run typecheck -w backend",
-    "db:init": "npm run db:init -w backend"
+    "dev:frontend": "npm run dev -w frontend",
+    "dev": "npm run build:shared && concurrently -k -n shared,backend,frontend \"npm:dev:shared\" \"npm:dev:backend\" \"npm:dev:frontend\"",
+    "start": "npm start -w backend",
+    "build": "npm run build:shared && npm run build -w backend && npm run build -w frontend",
+    "build:backend": "npm run build:shared && npm run build -w backend",
+    "build:frontend": "npm run build:shared && npm run build -w frontend",
+    "typecheck": "npm run build:shared && npm run typecheck -w shared && npm run typecheck -w backend && npm run typecheck -w frontend",
+    "test": "npm run test:shared && npm run test:backend && npm run test:frontend",
+    "test:shared": "npm run test -w shared",
+    "test:backend": "npm run build:shared && npm run test -w backend",
+    "test:frontend": "npm run build:shared && npm run test -w frontend",
+    "db:init": "npm run db:init -w backend",
+    "db:demo": "npm run build:shared && npm run db:demo -w backend",
+    "db:reset-demo": "npm run build:shared && npm run db:reset-demo -w backend",
+    "check:api": "npm run build:shared && node scripts/http-regression.mjs"
+  },
+  "devDependencies": {
+    "concurrently": "9.1.0"
   }
 }

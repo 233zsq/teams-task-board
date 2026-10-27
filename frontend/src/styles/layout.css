@@ -1,0 +1,358 @@
+/* ============================================================
+   应用布局：侧栏 + 工作区；断点 1366/768/360
+   ============================================================ */
+
+.app-shell {
+  display: flex;
+  align-items: stretch;
+  min-height: 100vh;
+}
+
+/* ---------- 侧栏：看板导航 ---------- */
+
+.app-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  padding: 20px 16px 18px;
+  color: var(--sidebar-ink);
+  background: linear-gradient(180deg, var(--sidebar) 0%, #101322 100%);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 6px;
+}
+
+.brand__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, #6b60e8 0%, #524cd3 100%);
+}
+
+.brand__title {
+  font-size: 14.5px;
+  font-weight: 700;
+}
+
+.brand__subtitle {
+  font-size: 11.5px;
+  color: var(--sidebar-muted);
+}
+
+.sidebar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.sidebar-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--sidebar-muted);
+}
+
+.board-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+
+.board-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border-radius: 10px;
+  text-align: left;
+  color: var(--sidebar-ink);
+  transition: background-color 0.16s ease;
+}
+
+.board-nav-item:hover {
+  background: var(--sidebar-soft);
+}
+
+.board-nav-item.is-active {
+  background: rgba(107, 96, 232, 0.24);
+  box-shadow: inset 0 0 0 1px rgba(139, 130, 255, 0.34);
+}
+
+.board-nav-item__meta {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.board-nav-item__name {
+  overflow: hidden;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.board-nav-item__time {
+  font-size: 11px;
+  color: var(--sidebar-muted);
+}
+
+.sidebar-create {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 10px;
+  border: 1px dashed var(--sidebar-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.sidebar-create .input {
+  height: 36px;
+  border-color: transparent;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--sidebar-ink);
+}
+
+.sidebar-create .input::placeholder {
+  color: var(--sidebar-muted);
+}
+
+.sidebar-create .input:focus {
+  border-color: rgba(139, 130, 255, 0.6);
+  box-shadow: 0 0 0 3px rgba(107, 96, 232, 0.25);
+}
+
+.sidebar-create .field-error {
+  color: #ff9db0;
+}
+
+.sidebar-footnote {
+  margin-top: auto;
+  padding: 0 6px;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--sidebar-muted);
+}
+
+/* ---------- 主区域 ---------- */
+
+.app-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.app-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: var(--topbar-height);
+  padding: 10px 24px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.crumbs {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--muted-strong);
+}
+
+.crumbs__current {
+  overflow: hidden;
+  font-weight: 600;
+  color: var(--ink);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
+  padding: 20px 24px 32px;
+}
+
+.board-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.board-header__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.board-header__title {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.board-header__subtitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+  color: var(--muted-strong);
+}
+
+.board-header__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.refresh-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.refresh-note.is-stale {
+  color: var(--warning);
+  font-weight: 600;
+}
+
+/* ---------- 状态卡片 ---------- */
+
+.state-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 40px 24px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  background: var(--surface);
+}
+
+.state-panel__title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.state-panel__text {
+  max-width: 520px;
+  font-size: 13px;
+  color: var(--muted-strong);
+}
+
+/* ---------- 错误页 ---------- */
+
+.error-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.error-page__panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 480px;
+  padding: 28px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+}
+
+.error-page__title {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.error-page__text {
+  font-size: 13.5px;
+  color: var(--muted-strong);
+}
+
+.error-page__detail {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--muted-strong);
+  background: var(--surface-sunken);
+  overflow-wrap: anywhere;
+}
+
+/* ---------- 响应式 ---------- */
+
+@media (max-width: 900px) {
+  .app-shell {
+    flex-direction: column;
+  }
+
+  .app-sidebar {
+    width: 100%;
+    padding: 14px 16px;
+  }
+
+  .sidebar-section {
+    max-height: none;
+  }
+
+  .board-nav-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .board-nav-item {
+    width: auto;
+  }
+
+  .app-topbar,
+  .workspace {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .board-header__title {
+    font-size: 21px;
+  }
+}
