@@ -1,3 +1,33 @@
+# 账号协作版公网部署（当前）
+
+**已上线：[tboard.bigdogaaa.cn](https://tboard.bigdogaaa.cn/)**。2026-10-28 13:07（北京时间）完成升级；入口直接显示个人登录/注册页，旧统一 team 密码不再用于站点访问。
+
+| 项 | 实际值 |
+| --- | --- |
+| 部署源码 | `b8ff7cb266e673780b70ee48df4c26ab36724c20` |
+| 部署包 SHA256 | `a5621bb3b07d0f2fcc8f848589c54bd1dccffa512eae69e43f0cd7d97104f70e`，服务器核对一致 |
+| 服务 | active / enabled，仅 127.0.0.1:4100 |
+| 数据结构 | 0002，个人账号、摘要会话、项目成员、负责人、发布者和动态 |
+| 访问边界 | 页面/资源公开；私有 API 个人会话 + CSRF + 项目成员授权 |
+| 升级前备份 | `/var/backups/team-task-board/deployment-20261028T050721Z/`，配置与一致数据库快照 |
+| 清理后的备份 | 2026-10-28 13:08:47，backup service success；每日 timer active/enabled |
+| 证书 | 沿用同域名证书，有效至 2027-01-25 18:59:59（北京时间）；暂存私钥已移除 |
+
+- 本地 207 项测试、类型/生产构建、API 50、跨浏览器 22、8 组账号协作、两品牌故障/尺寸/键盘/竞态及 S1 重启通过，详见 [S6 验证](../verification/accounts-projects/README.md)。生产依赖审计为 0 项。
+- 服务器 Linux 从锁文件安装 134 个生产包（审计 138），0 vulnerabilities；临时真实 SQLite 的 HTTP 回归 50/50 通过，激活前 bash 语法检查通过。
+- 实际 HTTPS 公网检查 **10/10**：公开登录/资源、匿名私有 API 401、两个账号注册及 Secure/HttpOnly/Strict Cookie、项目隔离 404、CSRF/跨源拒绝、成员角色、发布者/负责人、真实 Edge 个人视图、改密撤销旧会话、退出、动态及移除成员、未知 API/HTTP 308。见 [公网机器结果](../verification/accounts-projects/public-results.json)。
+- 用户明确授权删除原有 1 个项目和 1 个任务；先保存精确 ID 与升级前备份，再事务删除这两个记录。新用户或其他项目不在清理条件内。
+- 公网测试的 2 个合成账号、1 个临时项目和 1 个临时任务全部按精确 ID 清理；完整性 ok。最终检查时 users/boards/tasks 均为 0，四名历史演示成员仅作为兼容记录保留。
+- 原主站 / Fieldnotes / OpenCode 发布前后仍为 **200 / 200 / 302**。
+- 非主驾人工独立验收未执行，按用户决定不阻塞上线；不把本地或公网自动化冒称人工验收。
+
+![实际公网登录页](../verification/accounts-projects/public-login.png)
+
+---
+
+# 历史：2026-10-27 统一密码版本
+
+以下为旧部署事实，保留原始证据；访问方式及当前版本以上方账号版为准。
 # 公网部署记录
 
 **已上线：<https://tboard.bigdogaaa.cn/>**。启用时间：2026-10-27 21:35（北京时间）。用户已明确不等待组员独立复验，本次不宣称其已执行。

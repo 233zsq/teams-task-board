@@ -59,3 +59,7 @@ npm run test:e2e:s1
 ![最近动态](activity.png)
 
 窄屏：[登录 360](login-360.png)、[项目 768](project-768.png)、[项目 360](project-360.png)。
+
+## 公网部署
+
+账号版已于 2026-10-28 13:07（北京时间）上线。实际 HTTPS 10/10 及真实 Edge 链路通过；机器结果见 [public-results.json](public-results.json)，[真实公网登录页](public-login.png) 与 [真实公网临时协作项目](public-project.png)。临时账号/项目/任务已清理。固定源码和升级前备份见 [部署记录](../../deploy/DEPLOYMENT.md)。
