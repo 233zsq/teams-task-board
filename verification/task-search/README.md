@@ -54,3 +54,7 @@ npm run check:accounts
 ![桌面关键词与优先级组合](chrome-1366.png)
 
 Chrome：[768](chrome-768.png)、[360](chrome-360.png)；Edge：[1366](msedge-1366.png)、[768](msedge-768.png)、[360](msedge-360.png)。
+
+## 公网上线
+
+2026-10-28 14:04（北京时间）已上线。真实公网 8/8、Edge 完整链路通过；见 [public-results.json](public-results.json)、[公网桌面](public-1366.png)、[公网 360](public-360.png)。临时合成账号/项目/任务已按 ID 清理；现有账号、会话、项目等旧记录在重新开放前逐行验证保留。固定源码、SHA 和备份见 [部署记录](../../deploy/DEPLOYMENT.md)。
