@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import {
   STATUS_LABELS,
+  PRIORITY_LABELS,
   isOverdue,
   type Member,
   type Task,
@@ -45,6 +46,7 @@ const label = computed(
       {{ task.description }}
     </p>
     <div class="task-card__meta">
+      <span v-if="task.priority" class="chip chip--priority" :class="`chip--priority-${task.priority}`">{{ PRIORITY_LABELS[task.priority] }}</span>
       <span class="chip chip--member">{{ assignee }}</span>
       <span class="chip" :class="overdue ? 'chip--danger' : 'chip--muted'">
         截止 {{ dueText }}

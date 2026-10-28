@@ -1,5 +1,7 @@
 import { Router } from 'express';
-import { parseTaskCreateInput, parseTaskUpdateInput } from '@team-plan/shared';
+import { parseTaskCreateInput, parseTaskUpdateInput, parseTaskFilters } from '@team-plan/shared';
+import type { FeatureFlags } from '../../config';
+import { memberExists } from '../../db/members';
 import type { TaskService } from '../../modules/tasks/service';
 import { AppError } from '../errors';
 import { writeRoute } from '../middleware/json-body';
@@ -12,6 +14,7 @@ export interface TasksRouterDeps {
   service: TaskService;
   projects?: ProjectService;
   db: Database.Database;
+  features: FeatureFlags;
 }
 
 const TASK_FIELDS = ['title', 'description', 'dueDate', 'assigneeId', 'status'] as const;
@@ -21,10 +24,17 @@ export function tasksRouter(deps: TasksRouterDeps): Router {
   const router = Router();
 
   router.get('/boards/:boardId/tasks', (req, res) => {
-    // P0 takes no filter parameters at all.
-    parseQuery(req.query as Record<string, unknown>, []);
+    const query = parseQuery(req.query as Record<string, unknown>, deps.features.filters ? ['q', 'assigneeId', 'priority', 'dueFrom', 'dueTo'] : []);
     const boardId = assertUuidParam(pathParam(req.params.boardId));
-    const tasks = deps.service.listTasks(boardId);
+    const filters = parseTaskFilters(query);
+    if (!filters.ok) throw new AppError(422, 'VALIDATION_ERROR', { fields: filters.fields });
+    const assigneeId = filters.value.assigneeId;
+    if (assigneeId && assigneeId !== 'unassigned' && (deps.projects
+      ? !deps.projects.assignable(boardId).some((member) => member.id === assigneeId)
+      : !memberExists(deps.db, assigneeId))) {
+      throw new AppError(422, 'VALIDATION_ERROR', { fields: { assigneeId: '请选择当前项目成员' } });
+    }
+    const tasks = deps.service.listTasks(boardId, filters.value);
     res.status(200).json({ data: deps.projects ? tasks.map((task) => deps.projects!.task(task)) : tasks });
   });
 
@@ -34,9 +44,9 @@ export function tasksRouter(deps: TasksRouterDeps): Router {
       parseQuery(req.query as Record<string, unknown>, []);
       const boardId = assertUuidParam(pathParam(req.params.boardId));
       const body = req.body as Record<string, unknown>;
-      assertAllowedKeys(body, TASK_FIELDS);
+      assertAllowedKeys(body, deps.features.priority ? [...TASK_FIELDS, 'priority'] : TASK_FIELDS);
 
-      const parsed = parseTaskCreateInput(body);
+      const parsed = parseTaskCreateInput(body, deps.features.priority);
       if (!parsed.ok) {
         throw new AppError(422, 'VALIDATION_ERROR', { fields: parsed.fields });
       }
@@ -66,9 +76,9 @@ export function tasksRouter(deps: TasksRouterDeps): Router {
       const boardId = assertUuidParam(pathParam(req.params.boardId));
       const taskId = assertUuidParam(pathParam(req.params.taskId));
       const body = req.body as Record<string, unknown>;
-      assertAllowedKeys(body, TASK_FIELDS);
+      assertAllowedKeys(body, deps.features.priority ? [...TASK_FIELDS, 'priority'] : TASK_FIELDS);
 
-      const parsed = parseTaskUpdateInput(body);
+      const parsed = parseTaskUpdateInput(body, deps.features.priority);
       if (!parsed.ok) {
         throw new AppError(422, 'VALIDATION_ERROR', { fields: parsed.fields });
       }

@@ -5,7 +5,9 @@ import type {
   Member,
   Task,
   TaskFieldInput,
+  TaskFilters,
 } from '@team-plan/shared';
+import { hasTaskFilters } from '@team-plan/shared';
 import { ApiError } from '../api/client';
 import { api as defaultApi, type ApiEndpoints } from '../api/endpoints';
 
@@ -23,6 +25,9 @@ export interface WorkspaceState {
   members: Resource<Member[]>;
   board: Resource<Board | null>;
   tasks: Resource<Task[]>;
+  taskFilters: TaskFilters;
+  taskResults: Resource<Task[]>;
+  filterNotice: string | null;
   currentBoardId: string | null;
   lastRefreshedAt: number | null;
   refreshing: boolean;
@@ -43,6 +48,7 @@ export interface WorkspaceStore {
   createTask(input: TaskFieldInput): Promise<Task>;
   updateTask(taskId: string, input: TaskFieldInput): Promise<Task>;
   deleteTask(taskId: string): Promise<void>;
+  applyTaskFilters(filters: TaskFilters): Promise<boolean>;
   reset(): void;
 }
 
@@ -82,6 +88,9 @@ function createState(): WorkspaceState {
     members: initialResource<Member[]>([]),
     board: initialResource<Board | null>(null),
     tasks: initialResource<Task[]>([]),
+    taskFilters: {},
+    taskResults: initialResource<Task[]>([]),
+    filterNotice: null,
     currentBoardId: null,
     lastRefreshedAt: null,
     refreshing: false,
@@ -101,8 +110,60 @@ export function createWorkspaceStore(endpoints: ApiEndpoints): WorkspaceStore {
   let memberSequence = 0;
   let boardListSequence = 0;
   let boardAbort: AbortController | null = null;
+  let filterSequence = 0;
+  let filterAbort: AbortController | null = null;
+
+  function clearTaskFilters(): void {
+    filterSequence++;
+    filterAbort?.abort(); filterAbort = null;
+    state.taskFilters = {};
+    state.taskResults = initialResource<Task[]>([]);
+    state.filterNotice = null;
+  }
+
+  async function loadTaskResults(): Promise<boolean> {
+    const sequence = ++filterSequence;
+    filterAbort?.abort();
+    const boardId = state.currentBoardId;
+    if (!boardId || !hasTaskFilters(state.taskFilters)) {
+      filterAbort = null; state.taskResults = initialResource<Task[]>([]); return true;
+    }
+    const controller = new AbortController(); filterAbort = controller;
+    const filters = { ...state.taskFilters };
+    state.taskResults = { status: 'loading', data: [], error: null };
+    try {
+      const results = await endpoints.listTasks(boardId, controller.signal, filters);
+      if (sequence !== filterSequence || boardId !== state.currentBoardId) return false;
+      state.taskResults = { status: 'ready', data: results, error: null };
+      return true;
+    } catch (error) {
+      if (sequence !== filterSequence || boardId !== state.currentBoardId) return false;
+      state.taskResults = { status: 'error', data: [], error: errorOf(error) };
+      return false;
+    } finally { if (sequence === filterSequence) filterAbort = null; }
+  }
+
+  async function applyTaskFilters(filters: TaskFilters): Promise<boolean> {
+    state.taskFilters = { ...filters };
+    state.filterNotice = null;
+    return loadTaskResults();
+  }
+
+  /** A committed write stays successful if its follow-up read fails. */
+  async function afterTaskChange(boardId: string, task?: Task): Promise<void> {
+    state.filterNotice = null;
+    if (boardId !== state.currentBoardId || !hasTaskFilters(state.taskFilters)) return;
+    const loaded = await loadTaskResults();
+    if (boardId !== state.currentBoardId || !hasTaskFilters(state.taskFilters)) return;
+    if (!loaded && state.taskResults.status === 'error') {
+      state.filterNotice = '任务已保存，筛选结果暂时读取失败；请重试查询，无需再次保存';
+    } else if (loaded && task && !state.taskResults.data.some((item) => item.id === task.id)) {
+      state.filterNotice = '任务已保存，但不符合当前筛选条件，已移出结果；清空筛选可查看';
+    }
+  }
 
   function reset(): void {
+    clearTaskFilters();
     boardSequence += 1;
     memberSequence += 1;
     boardListSequence += 1;
@@ -172,6 +233,7 @@ export function createWorkspaceStore(endpoints: ApiEndpoints): WorkspaceStore {
   }
 
   async function openBoard(boardId: string): Promise<boolean> {
+    clearTaskFilters();
     const sequence = ++boardSequence;
     boardAbort?.abort();
     const controller = new AbortController();
@@ -258,6 +320,7 @@ export function createWorkspaceStore(endpoints: ApiEndpoints): WorkspaceStore {
       }
       state.board = { status: 'ready', data: board, error: null };
       state.tasks = { status: 'ready', data: tasks, error: null };
+      if (hasTaskFilters(state.taskFilters) && !(await loadTaskResults())) failed = true;
     } catch (error) {
       if (sequence !== boardSequence || state.currentBoardId !== boardId) {
         return;
@@ -277,7 +340,7 @@ export function createWorkspaceStore(endpoints: ApiEndpoints): WorkspaceStore {
         if (!failed) {
           state.lastRefreshedAt = Date.now();
           state.refreshFailed = false;
-        }
+        } else state.refreshFailed = true;
         state.refreshing = false;
       } else {
         state.refreshing = false;
@@ -310,6 +373,7 @@ export function createWorkspaceStore(endpoints: ApiEndpoints): WorkspaceStore {
     if (task.boardId === state.currentBoardId) {
       state.tasks.data = [...state.tasks.data, task].sort(byTaskOrder);
       state.tasks.status = 'ready';
+      await afterTaskChange(boardId, task);
     }
     return task;
   }
@@ -325,6 +389,7 @@ export function createWorkspaceStore(endpoints: ApiEndpoints): WorkspaceStore {
         item.id === task.id ? task : item,
       );
       state.tasks.status = 'ready';
+      await afterTaskChange(boardId, task);
     }
     return task;
   }
@@ -335,7 +400,10 @@ export function createWorkspaceStore(endpoints: ApiEndpoints): WorkspaceStore {
       throw new ApiError({ kind: 'http', status: 404, code: 'NOT_FOUND' });
     }
     await endpoints.deleteTask(boardId, taskId);
-    state.tasks.data = state.tasks.data.filter((item) => item.id !== taskId);
+    if (boardId === state.currentBoardId) {
+      state.tasks.data = state.tasks.data.filter((item) => item.id !== taskId);
+      await afterTaskChange(boardId);
+    }
   }
 
   return {
@@ -350,6 +418,7 @@ export function createWorkspaceStore(endpoints: ApiEndpoints): WorkspaceStore {
     createTask,
     updateTask,
     deleteTask,
+    applyTaskFilters,
     reset,
   };
 }

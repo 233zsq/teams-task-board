@@ -4,6 +4,8 @@
 
 本文解释系统边界、关键运行语义和技术决策。用户场景、字段、业务规则、数据库约束与 API 契约以 [spec.md](spec.md) 为唯一事实来源；切片分工见 [tasks.md](tasks.md)，验收见 [checklist.md](checklist.md)。本文不复制这些契约。
 
+2026-10-28 S5 增量：0003 增加任务优先级和查询索引，优先级/筛选默认启用；保留关闭模式和仅优先级模式。任务列表在项目授权后校验查询，关键词使用参数化 instr/lower 字面包含，不拼入 SQL。工作区分开保存全量任务与查询结果；查询拥有独立取消器/序号，切板或新条件作废旧响应。保存与后续筛选读取使用不同成功语义；总体统计始终基于全量快照。验证入口见 [搜索筛选记录](verification/task-search/README.md)。
+
 2026-10-28 账号增量覆盖旧版匿名/统一密码及四预置成员描述：`accounts` 模块封装异步 scrypt、摘要会话、持久限流及改密撤销；`projects` 模块封装项目成员、负责人、归属及动态。路由统一先鉴权/CSRF，再校验项目访问；业务修改与动态在同一 SQLite 事务内。前端 AccountGate 恢复会话后挂载原工作区，项目成员按当前项目加载，跨账号清理缓存。新增 0002 迁移保留旧数据；真实账号分配使用独立外键列，避免修改已应用的 0001 及四成员约束。发布者由会话写入，PUT 白名单不可覆盖。
 
 生产 Nginx 仅提供 HTTPS/反代，不再要求共享 Basic Auth；登录页公开，私有业务 API 仍要求账号及成员资格。部署前关闭写入并备份数据库；迁移失败同时恢复旧代码与升级前数据库。安全实现依据 [Node crypto](https://nodejs.org/api/crypto.html)、[OWASP 密码存储](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html) 和 [会话管理](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)。

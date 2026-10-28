@@ -3,6 +3,7 @@ import { FIELD_MESSAGES } from './messages';
 import { invalid, valid, type FieldErrors, type ValidationResult } from './result';
 import { isUuid, isValidDateString } from './date';
 import { isTaskStatus } from './status';
+import { parseTaskPriority } from './priority';
 import {
   normalizeBoardName,
   normalizeTaskDescription,
@@ -23,6 +24,7 @@ export function taskToFieldInput(
     dueDate: task.dueDate,
     assigneeId: task.assigneeId,
     status: task.status,
+    ...(task.priority === undefined ? {} : { priority: task.priority }),
     ...patch,
   };
 }
@@ -94,6 +96,7 @@ export function parseTaskStatus(raw: unknown): ValidationResult<TaskFieldInput['
  */
 export function parseTaskCreateInput(
   body: Record<string, unknown>,
+  priorityEnabled = false,
 ): ValidationResult<TaskFieldInput> {
   const fields: FieldErrors = {};
 
@@ -149,11 +152,10 @@ export function parseTaskCreateInput(
     }
   }
 
-  if (Object.keys(fields).length > 0) {
-    return { ok: false, fields };
-  }
-
-  return valid({ title, description, dueDate, assigneeId, status });
+  const priority = priorityEnabled ? parseTaskPriority(hasOwn(body, 'priority') ? body.priority : 'medium') : null;
+  if (priority && !priority.ok) Object.assign(fields, priority.fields);
+  if (Object.keys(fields).length > 0) return { ok: false, fields };
+  return valid({ title, description, dueDate, assigneeId, status, ...(priority?.ok ? { priority: priority.value } : {}) });
 }
 
 /**
@@ -163,6 +165,7 @@ export function parseTaskCreateInput(
  */
 export function parseTaskUpdateInput(
   body: Record<string, unknown>,
+  priorityEnabled = false,
 ): ValidationResult<TaskFieldInput> {
   const fields: FieldErrors = {};
 
@@ -226,9 +229,8 @@ export function parseTaskUpdateInput(
     }
   }
 
-  if (Object.keys(fields).length > 0) {
-    return { ok: false, fields };
-  }
-
-  return valid({ title, description, dueDate, assigneeId, status });
+  const priority = priorityEnabled ? parseTaskPriority(body.priority) : null;
+  if (priority && !priority.ok) Object.assign(fields, priority.fields);
+  if (Object.keys(fields).length > 0) return { ok: false, fields };
+  return valid({ title, description, dueDate, assigneeId, status, ...(priority?.ok ? { priority: priority.value } : {}) });
 }

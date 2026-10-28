@@ -21,8 +21,8 @@ describe('0001 to account projects migration', () => {
       db.raw.prepare(`INSERT INTO tasks(id,board_id,title,description,due_date,assignee_id,status,created_at,updated_at)
         VALUES ('old-task','old-board','旧任务','原描述','2026-10-28',?,'doing','old-created','old-updated')`).run(SEED_MEMBERS[0]!.id);
       const snapshot = db.raw.prepare('SELECT * FROM tasks').get() as Record<string, unknown>;
-      expect(applyMigrations(db.raw, path.resolve('migrations')).applied).toEqual(['0002']);
-      expect(db.raw.prepare('SELECT * FROM tasks').get()).toEqual({ ...snapshot, created_by: null, assigned_user_id: null });
+      expect(applyMigrations(db.raw, path.resolve('migrations')).applied).toEqual(['0002', '0003']);
+      expect(db.raw.prepare('SELECT * FROM tasks').get()).toEqual({ ...snapshot, created_by: null, assigned_user_id: null, priority: 'medium' });
       expect(db.raw.prepare('SELECT owner_id FROM boards').get()).toEqual({ owner_id: null });
       expect(() => claimLegacyProjects(db.raw, 'missing')).toThrow('尚未注册');
       db.raw.prepare("INSERT INTO users(id,username,display_name,password_hash,created_at) VALUES ('operator','operator','指定负责人','unused-fixture','now')").run();
@@ -30,7 +30,7 @@ describe('0001 to account projects migration', () => {
       expect(db.raw.prepare('SELECT COUNT(*) AS count FROM board_members').get()).toEqual({ count: 0 });
       expect(claimLegacyProjects(db.raw, 'operator')).toBe(1);
       expect(claimLegacyProjects(db.raw, 'operator')).toBe(0);
-      expect(db.raw.prepare('SELECT * FROM tasks').get()).toEqual({ ...snapshot, created_by: null, assigned_user_id: null });
+      expect(db.raw.prepare('SELECT * FROM tasks').get()).toEqual({ ...snapshot, created_by: null, assigned_user_id: null, priority: 'medium' });
       expect(initializeDatabase({ databasePath: temp.path, migrationsDir: path.resolve('migrations') }).applied).toEqual([]);
       expect(db.raw.pragma('foreign_key_check')).toEqual([]);
       expect(db.raw.prepare('SELECT owner_id FROM boards').get()).toEqual({ owner_id: 'operator' });

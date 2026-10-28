@@ -1,5 +1,5 @@
 import type Database from 'better-sqlite3';
-import type { Task, TaskStatus } from '@team-plan/shared';
+import type { Task, TaskStatus, TaskPriority, TaskFilters } from '@team-plan/shared';
 
 export interface TaskRow {
   id: string;
@@ -9,21 +9,33 @@ export interface TaskRow {
   due_date: string | null;
   assignee_id: string | null;
   assigned_user_id?: string | null;
+  priority?: TaskPriority;
   status: string;
   created_at: string;
   updated_at: string;
 }
 
 const TASK_COLUMNS =
-  'id, board_id, title, description, due_date, assignee_id, status, created_at, updated_at, assigned_user_id';
+  'id, board_id, title, description, due_date, assignee_id, status, created_at, updated_at, assigned_user_id, priority';
 
 /** P0 order: createdAt then id, ascending (spec §4.3). */
-export function listTaskRows(db: Database.Database, boardId: string): TaskRow[] {
+export function listTaskRows(db: Database.Database, boardId: string, filters: TaskFilters = {}): TaskRow[] {
+  const clauses = ['board_id = ?'];
+  const values: string[] = [boardId];
+  if (filters.q) {
+    clauses.push('instr(lower(title || char(10) || description), lower(?)) > 0');
+    values.push(filters.q);
+  }
+  if (filters.assigneeId === 'unassigned') clauses.push('assigned_user_id IS NULL AND assignee_id IS NULL');
+  else if (filters.assigneeId) { clauses.push('COALESCE(assigned_user_id, assignee_id) = ?'); values.push(filters.assigneeId); }
+  if (filters.priority) { clauses.push('priority = ?'); values.push(filters.priority); }
+  if (filters.dueFrom) { clauses.push('due_date >= ?'); values.push(filters.dueFrom); }
+  if (filters.dueTo) { clauses.push('due_date <= ?'); values.push(filters.dueTo); }
   return db
     .prepare(
-      `SELECT ${TASK_COLUMNS} FROM tasks WHERE board_id = ? ORDER BY created_at ASC, id ASC`,
+      `SELECT ${TASK_COLUMNS} FROM tasks WHERE ${clauses.join(' AND ')} ORDER BY created_at ASC, id ASC`,
     )
-    .all(boardId) as TaskRow[];
+    .all(...values) as TaskRow[];
 }
 
 export function getTaskRow(
@@ -38,7 +50,7 @@ export function getTaskRow(
 
 export function insertTaskRow(db: Database.Database, row: TaskRow): void {
   db.prepare(
-    `INSERT INTO tasks (${TASK_COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO tasks (${TASK_COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).run(
     row.id,
     row.board_id,
@@ -50,6 +62,7 @@ export function insertTaskRow(db: Database.Database, row: TaskRow): void {
     row.created_at,
     row.updated_at,
     db.prepare('SELECT 1 FROM users WHERE id = ?').get(row.assignee_id) ? row.assignee_id : null,
+    row.priority ?? 'medium',
   );
 }
 
@@ -57,7 +70,7 @@ export function updateTaskRow(db: Database.Database, row: TaskRow): number {
   const result = db
     .prepare(
       `UPDATE tasks
-         SET title = ?, description = ?, due_date = ?, assignee_id = ?, status = ?, updated_at = ?, assigned_user_id = ?
+         SET title = ?, description = ?, due_date = ?, assignee_id = ?, status = ?, updated_at = ?, assigned_user_id = ?, priority = COALESCE(?, priority)
        WHERE board_id = ? AND id = ?`,
     )
     .run(
@@ -68,6 +81,7 @@ export function updateTaskRow(db: Database.Database, row: TaskRow): number {
       row.status,
       row.updated_at,
       db.prepare('SELECT 1 FROM users WHERE id = ?').get(row.assignee_id) ? row.assignee_id : null,
+      row.priority ?? null,
       row.board_id,
       row.id,
     );
@@ -86,7 +100,7 @@ export function deleteTaskRow(
   return result.changes;
 }
 
-export function toTask(row: TaskRow): Task {
+export function toTask(row: TaskRow, includePriority = false): Task {
   return {
     id: row.id,
     boardId: row.board_id,
@@ -97,6 +111,7 @@ export function toTask(row: TaskRow): Task {
     status: row.status as TaskStatus,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    ...(includePriority ? { priority: row.priority ?? 'medium' } : {}),
   };
 }
 
@@ -111,5 +126,6 @@ export function toTaskRow(task: Task): TaskRow {
     status: task.status,
     created_at: task.createdAt,
     updated_at: task.updatedAt,
+    ...(task.priority === undefined ? {} : { priority: task.priority }),
   };
 }

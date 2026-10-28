@@ -1,5 +1,5 @@
 import type Database from 'better-sqlite3';
-import type { Task, TaskFieldInput } from '@team-plan/shared';
+import type { Task, TaskFieldInput, TaskFilters } from '@team-plan/shared';
 import { getBoardRow } from '../../db/boards';
 import { memberExists } from '../../db/members';
 import {
@@ -15,7 +15,7 @@ import { withWriteTransaction } from '../../db/transaction';
 import { AssigneeNotFoundError, NotFoundError } from '../errors';
 
 export interface TaskService {
-  listTasks(boardId: string): Task[];
+  listTasks(boardId: string, filters?: TaskFilters): Task[];
   getTask(boardId: string, taskId: string): Task;
   createTask(boardId: string, input: TaskFieldInput): Task;
   updateTask(boardId: string, taskId: string, input: TaskFieldInput): Task;
@@ -26,6 +26,7 @@ export interface TaskServiceDeps {
   db: Database.Database;
   now: () => Date;
   generateId: () => string;
+  priority?: boolean;
 }
 
 function assertBoardExists(db: Database.Database, boardId: string): void {
@@ -42,9 +43,9 @@ function assertAssigneeExists(db: Database.Database, assigneeId: string | null):
 
 export function createTaskService(deps: TaskServiceDeps): TaskService {
   return {
-    listTasks(boardId: string): Task[] {
+    listTasks(boardId: string, filters: TaskFilters = {}): Task[] {
       assertBoardExists(deps.db, boardId);
-      return listTaskRows(deps.db, boardId).map(toTask);
+      return listTaskRows(deps.db, boardId, filters).map((row) => toTask(row, deps.priority));
     },
 
     getTask(boardId: string, taskId: string): Task {
@@ -53,7 +54,7 @@ export function createTaskService(deps: TaskServiceDeps): TaskService {
       if (row === undefined) {
         throw new NotFoundError();
       }
-      return toTask(row);
+      return toTask(row, deps.priority);
     },
 
     createTask(boardId: string, input: TaskFieldInput): Task {
@@ -72,6 +73,7 @@ export function createTaskService(deps: TaskServiceDeps): TaskService {
           status: input.status,
           createdAt: timestamp,
           updatedAt: timestamp,
+          ...(deps.priority ? { priority: input.priority ?? 'medium' } : {}),
         };
 
         insertTaskRow(deps.db, toTaskRow(task));
@@ -88,7 +90,7 @@ export function createTaskService(deps: TaskServiceDeps): TaskService {
         assertAssigneeExists(deps.db, input.assigneeId);
 
         const task: Task = {
-          ...toTask(existing),
+          ...toTask(existing, deps.priority),
           title: input.title,
           description: input.description,
           dueDate: input.dueDate,
@@ -96,6 +98,7 @@ export function createTaskService(deps: TaskServiceDeps): TaskService {
           status: input.status,
           // Any successful PUT refreshes updatedAt, even for identical values.
           updatedAt: deps.now().toISOString(),
+          ...(deps.priority ? { priority: input.priority ?? 'medium' } : {}),
         };
 
         updateTaskRow(deps.db, toTaskRow(task));

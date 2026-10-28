@@ -3,12 +3,14 @@ import { computed, nextTick, ref, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 import {
   TASK_STATUSES,
+  hasTaskFilters,
   businessToday,
   isOverdue,
   formatBusinessTime,
   taskToFieldInput,
   type Task,
   type TaskStatus,
+  type TaskFilters,
 } from '@team-plan/shared';
 import { ApiError } from '../../api/client';
 import { useWorkspaceStore } from '../../state/injection';
@@ -20,17 +22,20 @@ import TaskDetailPanel from './TaskDetailPanel.vue';
 import TaskFormDialog from './TaskFormDialog.vue';
 import ProjectPanel from '../projects/ProjectPanel.vue';
 import { account } from '../../state/account';
+import TaskFilterBar from './TaskFilterBar.vue';
 
 const store = useWorkspaceStore();
 const state = store.state;
 const personalFilter = ref<'all' | 'assigned' | 'published'>('all');
+const filtersActive = computed(() => hasTaskFilters(state.taskFilters));
+const resultTasks = computed(() => filtersActive.value ? state.taskResults.data : state.tasks.data);
 const progress = computed(() => {
   const total = state.tasks.data.length;
   const done = state.tasks.data.filter((task) => task.status === 'done').length;
   return { total, done, overdue: state.tasks.data.filter((task) => isOverdue(task.dueDate, task.status, today.value)).length,
     percent: total ? Math.round(done / total * 100) : 0 };
 });
-const visibleTasks = computed(() => state.tasks.data.filter((task) => personalFilter.value === 'all'
+const visibleTasks = computed(() => resultTasks.value.filter((task) => personalFilter.value === 'all'
   || (personalFilter.value === 'assigned' && task.assigneeId === account.user?.id)
   || (personalFilter.value === 'published' && task.createdBy?.id === account.user?.id)));
 watch(() => state.currentBoardId, () => { personalFilter.value = 'all'; });
@@ -49,7 +54,8 @@ const today = computed(() => businessToday(new Date(todayTick.value)));
 
 const selectedTaskId = ref<string | null>(null);
 const selectedTask = computed(
-  () => state.tasks.data.find((task) => task.id === selectedTaskId.value) ?? null,
+  () => resultTasks.value.find((task) => task.id === selectedTaskId.value)
+    ?? state.tasks.data.find((task) => task.id === selectedTaskId.value) ?? null,
 );
 
 type FormState = { mode: 'create'; status: TaskStatus } | { mode: 'edit'; task: Task };
@@ -79,11 +85,15 @@ const boardFailed = computed(
   () => state.board.status === 'error' && state.board.error?.code !== 'NOT_FOUND',
 );
 const columnsLoading = computed(
-  () => state.board.status === 'loading' || state.tasks.status === 'loading',
+  () => state.board.status === 'loading' || state.tasks.status === 'loading' || (filtersActive.value && state.taskResults.status === 'loading'),
 );
 const tasksError = computed(() =>
-  state.tasks.status === 'error' ? state.tasks.error : null,
+  filtersActive.value && state.taskResults.status === 'error' ? state.taskResults.error
+    : state.tasks.status === 'error' ? state.tasks.error : null,
 );
+async function applyFilters(filters: TaskFilters): Promise<void> {
+  if (await confirmLeave()) await store.applyTaskFilters(filters);
+}
 
 async function refresh(): Promise<void> {
   if (!(await confirmLeave())) {
@@ -304,8 +314,12 @@ function onSaved(): void {
           <button :class="{ 'is-active': personalFilter === 'published' }" :aria-pressed="personalFilter === 'published'" @click="personalFilter = 'published'">我发布的</button>
           <span>当前项目 · {{ visibleTasks.length }} 项</span>
         </div>
-        <p v-if="personalFilter !== 'all' && !visibleTasks.length" class="project-empty" role="status">当前项目暂无{{ personalFilter === 'assigned' ? '分配给你的' : '你发布的' }}任务</p>
+        <p v-if="personalFilter !== 'all' && !filtersActive && !columnsLoading && !tasksError && !visibleTasks.length" class="project-empty" role="status">当前项目暂无{{ personalFilter === 'assigned' ? '分配给你的' : '你发布的' }}任务</p>
       </template>
+
+      <TaskFilterBar v-if="state.health.data?.features.filters && state.board.status === 'ready'" :key="state.currentBoardId ?? ''" :filters="state.taskFilters" :members="state.members" :loading="state.taskResults.status === 'loading'" @apply="applyFilters" />
+      <p v-if="state.filterNotice" class="filter-result-notice" role="status">{{ state.filterNotice }}</p>
+      <div v-if="filtersActive && state.taskResults.status === 'ready' && !visibleTasks.length" class="project-empty filter-empty" role="status"><strong>没有匹配任务</strong><p>试试更换关键词或放宽条件，个人视图也会参与筛选。</p><button class="btn btn--outline btn--sm" @click="personalFilter = 'all'; store.applyTaskFilters({})">清空全部条件</button></div>
 
       <p class="scroll-hint" aria-hidden="true">← 左右滑动查看三列 →</p>
 
