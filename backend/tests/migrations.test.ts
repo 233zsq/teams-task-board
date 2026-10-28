@@ -38,8 +38,8 @@ describe('P0 migrations and seed', () => {
     const result = init(temp);
 
     expect(result.created).toBe(false);
-    expect(result.applied).toEqual(['0001']);
-    expect(result.currentVersion).toBe('0001');
+    expect(result.applied).toEqual(['0001', '0002']);
+    expect(result.currentVersion).toBe('0002');
     expect(result.memberCount).toBe(4);
 
     const db = openDatabase(temp.path);
@@ -121,7 +121,7 @@ describe('P0 migrations and seed', () => {
     const second = init(temp);
     expect(second.created).toBe(false);
     expect(second.applied).toEqual([]);
-    expect(second.currentVersion).toBe('0001');
+    expect(second.currentVersion).toBe('0002');
     expect(second.memberCount).toBe(4);
 
     const reopened = openDatabase(temp.path);
@@ -140,7 +140,7 @@ describe('P0 migrations and seed', () => {
             .prepare('SELECT COUNT(*) AS count FROM schema_migrations')
             .get() as { count: number }
         ).count,
-      ).toBe(1);
+      ).toBe(2);
     } finally {
       reopened.close();
     }
@@ -296,7 +296,7 @@ describe('migration compatibility checks', () => {
     try {
       db.raw
         .prepare('INSERT INTO schema_migrations (version, checksum, applied_at) VALUES (?, ?, ?)')
-        .run('0002', 'a'.repeat(64), '2026-10-21T00:00:00.000Z');
+        .run('9999', 'a'.repeat(64), '2026-10-21T00:00:00.000Z');
       expect(() => assertSchemaCompatible(db.raw, MIGRATIONS_DIR)).toThrow(/缺少文件/);
     } finally {
       db.close();

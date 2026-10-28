@@ -11,6 +11,12 @@ export function describeError(error: unknown): string {
   }
 
   switch (error.code) {
+    case 'UNAUTHENTICATED': return '请先登录，或重新登录已过期的会话';
+    case 'INVALID_CREDENTIALS': return '用户名或密码不正确';
+    case 'ACCESS_DENIED': return '仅项目负责人可以进行此操作';
+    case 'ACCOUNT_EXISTS': return '该用户名已被使用，请换一个用户名';
+    case 'RATE_LIMITED': return '操作过于频繁，请稍后再试';
+    case 'CSRF_INVALID': return '会话校验失败，请刷新页面后重试';
     case 'TIMEOUT':
       return '请求超时，结果未知；请先刷新看板核对，再决定是否重试';
     case 'NETWORK_ERROR':

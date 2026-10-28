@@ -154,7 +154,7 @@ export function createWorkspaceStore(endpoints: ApiEndpoints): WorkspaceStore {
     state.members.status = 'loading';
     state.members.error = null;
     try {
-      const members = await endpoints.listMembers();
+      const members = await endpoints.listMembers(undefined, state.currentBoardId ?? undefined);
       if (sequence !== memberSequence) {
         return null;
       }
@@ -183,8 +183,9 @@ export function createWorkspaceStore(endpoints: ApiEndpoints): WorkspaceStore {
     state.lastRefreshedAt = null;
     state.refreshFailed = false;
 
-    const membersPending =
-      state.members.status !== 'ready' ? loadMembers() : Promise.resolve(null);
+    // Membership is project-specific; never reuse the previous project's people.
+    state.members = { status: 'loading', data: [], error: null };
+    const membersPending = loadMembers();
 
     const boardPromise = endpoints.getBoard(boardId, controller.signal);
     const tasksPromise = endpoints.listTasks(boardId, controller.signal);

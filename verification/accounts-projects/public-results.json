@@ -1,0 +1,48 @@
+{
+  "date": "2026-10-28T05:07:48.608Z",
+  "site": "https://tboard.bigdogaaa.cn",
+  "results": [
+    {
+      "name": "public HTTPS login page and assets",
+      "status": "passed"
+    },
+    {
+      "name": "anonymous workspace and member APIs require a personal session",
+      "status": "passed"
+    },
+    {
+      "name": "two registrations and secure session cookies",
+      "status": "passed"
+    },
+    {
+      "name": "project owner and identity isolation",
+      "status": "passed"
+    },
+    {
+      "name": "CSRF and cross-origin writes rejected",
+      "status": "passed"
+    },
+    {
+      "name": "owner invitation and ordinary-member permission boundary",
+      "status": "passed"
+    },
+    {
+      "name": "publisher and assignee recorded separately",
+      "status": "passed"
+    },
+    {
+      "name": "real Edge login, project and personal views",
+      "status": "passed"
+    },
+    {
+      "name": "activity and member removal revoke access",
+      "status": "passed"
+    },
+    {
+      "name": "unknown API JSON 404 and HTTP redirect preserves route/query",
+      "status": "passed"
+    }
+  ],
+  "runtimeErrors": [],
+  "fixtureCleanup": "passed: exact IDs only, 2 test accounts / 1 project / 1 task removed; SQLite integrity ok"
+}

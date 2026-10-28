@@ -10,6 +10,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { browserConfig, launchBrowser } from './browser.mjs';
+import { registerTestSession } from './auth-session.mjs';
+let session;
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const tempRoot = fs.realpathSync(os.tmpdir());
@@ -39,7 +41,8 @@ function run(entry, env) {
 async function api(method, route, body) {
   const response = await fetch(`${base}/api/v1${route}`, {
     method,
-    ...(body === undefined ? {} : { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }),
+    headers: { ...session?.headers, ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
   assert(response.ok, `${method} ${route}: ${response.status}`);
   return response.status === 204 ? null : (await response.json()).data;
@@ -254,6 +257,9 @@ async function main() {
     console.log(`Browser: ${launched.engine}`);
     try {
       const context = await launched.browser.newContext({ viewport: { width: 1366, height: 900 } });
+      session = await registerTestSession(base, `浏览器回归 ${config.channel}`);
+      await session.apply(context);
+      await api('POST', '/boards', { name: `初始回归项目 ${config.channel}` });
       const page = await context.newPage();
       page.setDefaultTimeout(12_000);
       const pageErrors = [];

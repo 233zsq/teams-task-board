@@ -37,10 +37,19 @@ test ! -f /etc/systemd/system/team-task-board.service || cp -a /etc/systemd/syst
 systemctl is-active --quiet team-task-board && was_active=1 || was_active=0
 printf '%s\n' "$previous" > "$backup/previous-release.txt"
 success=0
+database_captured=0
 rollback() {
     result=$?
     if ((success == 0)); then
         set +e
+        systemctl stop team-task-board
+        if ((database_captured)); then
+            if test -f /var/lib/team-task-board/team-plan.sqlite; then
+                cp -a /var/lib/team-task-board/team-plan.sqlite "$backup/failed-database.sqlite"
+            fi
+            rm -f /var/lib/team-task-board/team-plan.sqlite-wal /var/lib/team-task-board/team-plan.sqlite-shm
+            install -m 600 -o teamboard -g teamboard "$backup/database.sqlite" /var/lib/team-task-board/team-plan.sqlite
+        fi
         if test -n "$previous" && test -d "$previous"; then ln -sfn "$previous" "$root/current"; fi
         if test -f "$backup/nginx.conf"; then cp -a "$backup/nginx.conf" "$config"; else rm -f "$config"; fi
         if test -d "$backup/runtime-config"; then cp -a "$backup/runtime-config/." /etc/team-task-board/; fi
@@ -76,19 +85,32 @@ ENABLE_SHARING=0
 EOF
 chown root:teamboard /etc/team-task-board/runtime.env
 chmod 640 /etc/team-task-board/runtime.env
-if ! test -f /etc/team-task-board/users.htpasswd; then
-    python3 - <<'PY'
+# Keep external writes closed until the new app passes local health/auth checks.
+if test -f "$config"; then
+    python3 - "$config" <<'PY'
 from pathlib import Path
-import os, secrets, subprocess
-password = secrets.token_urlsafe(24)
-hashed = subprocess.run(['openssl', 'passwd', '-6', '-stdin'], input=password+'\n', text=True, capture_output=True, check=True).stdout.strip()
-Path('/etc/team-task-board/users.htpasswd').write_text('team:'+hashed+'\n')
-Path('/etc/team-task-board/access.txt').write_text('Username: team\nPassword: '+password+'\n')
-os.chmod('/etc/team-task-board/access.txt', 0o600)
+import sys
+p = Path(sys.argv[1])
+text = p.read_text()
+if 'location / {' not in text:
+    raise SystemExit('Cannot install project maintenance response')
+p.write_text(text.replace('location / {', 'location / {\n        return 503;', 1))
 PY
+    nginx -t
+    systemctl reload nginx
 fi
-chown root:www-data /etc/team-task-board/users.htpasswd
-chmod 640 /etc/team-task-board/users.htpasswd
+systemctl stop team-task-board || true
+if test -f /var/lib/team-task-board/team-plan.sqlite; then
+    python3 - "$backup/database.sqlite" <<'PY'
+import sqlite3, sys
+source = sqlite3.connect('/var/lib/team-task-board/team-plan.sqlite')
+target = sqlite3.connect(sys.argv[1])
+source.backup(target)
+assert target.execute('PRAGMA integrity_check').fetchone()[0] == 'ok'
+target.close(); source.close()
+PY
+    database_captured=1
+fi
 ln -sfn "$release" "$root/current"
 runuser -u teamboard -- env DATABASE_PATH=/var/lib/team-task-board/team-plan.sqlite /usr/local/bin/node "$root/current/backend/dist/db/init.js"
 install -m 644 "$release/deploy/team-task-board.service" /etc/systemd/system/team-task-board.service
@@ -104,6 +126,9 @@ for attempt in $(seq 1 40); do
     sleep 0.25
 done
 test "$healthy" = 1 || { journalctl -u team-task-board --no-pager -n 15; exit 1; }
+test "$(curl --silent --max-time 2 -H "Host: $domain" -o /dev/null -w '%{http_code}' "http://127.0.0.1:$port/api/v1/boards")" = 401
+systemctl enable --now team-task-board-backup.timer
+systemctl start team-task-board-backup.service
 sed -e "s/__DOMAIN__/$domain/g" -e "s/__PORT__/$port/g" "$release/deploy/nginx.conf.template" > "$config"
 nginx -t
 systemctl reload nginx
@@ -112,13 +137,12 @@ for attempt in $(seq 1 12); do
     # A graceful reload can briefly leave old workers serving the previous
     # default certificate. Retry without ever disabling TLS verification.
     if status=$(curl --noproxy '*' --silent --show-error --max-time 2 --resolve "$domain:443:127.0.0.1" -o /dev/null -w '%{http_code}' "https://$domain/" 2>"$backup/tls-probe.err"); then
-        if test "$status" = 401; then https_ready=1; break; fi
+        if test "$status" = 200; then https_ready=1; break; fi
     fi
     sleep 0.5
 done
 test "$https_ready" = 1 || { cat "$backup/tls-probe.err" >&2; echo 'Public TLS/authentication gate check failed' >&2; exit 1; }
+test "$(curl --noproxy '*' --silent --max-time 3 --resolve "$domain:443:127.0.0.1" -o /dev/null -w '%{http_code}' "https://$domain/api/v1/boards")" = 401
 printf 'HTTPS_GATE_READY_ATTEMPT=%s\n' "$attempt"
-systemctl enable --now team-task-board-backup.timer
-systemctl start team-task-board-backup.service
 success=1
-printf 'DEPLOYED=https://%s/\nREVISION=%s\nSERVICE=team-task-board\nPORT=127.0.0.1:%s\nBACKUP=%s\nCREDENTIALS=/etc/team-task-board/access.txt\n' "$domain" "$revision" "$port" "$backup"
+printf 'DEPLOYED=https://%s/\nREVISION=%s\nSERVICE=team-task-board\nPORT=127.0.0.1:%s\nBACKUP=%s\nAUTH=personal-registration-and-project-membership\n' "$domain" "$revision" "$port" "$backup"

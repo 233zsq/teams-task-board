@@ -4,9 +4,14 @@ import type { TaskService } from '../../modules/tasks/service';
 import { AppError } from '../errors';
 import { writeRoute } from '../middleware/json-body';
 import { assertAllowedKeys, assertUuidParam, parseQuery, pathParam } from '../validation';
+import type Database from 'better-sqlite3';
+import type { ProjectService } from '../../modules/projects/service';
+import { currentUser } from './accounts';
 
 export interface TasksRouterDeps {
   service: TaskService;
+  projects?: ProjectService;
+  db: Database.Database;
 }
 
 const TASK_FIELDS = ['title', 'description', 'dueDate', 'assigneeId', 'status'] as const;
@@ -19,7 +24,8 @@ export function tasksRouter(deps: TasksRouterDeps): Router {
     // P0 takes no filter parameters at all.
     parseQuery(req.query as Record<string, unknown>, []);
     const boardId = assertUuidParam(pathParam(req.params.boardId));
-    res.status(200).json({ data: deps.service.listTasks(boardId) });
+    const tasks = deps.service.listTasks(boardId);
+    res.status(200).json({ data: deps.projects ? tasks.map((task) => deps.projects!.task(task)) : tasks });
   });
 
   router.post(
@@ -35,7 +41,13 @@ export function tasksRouter(deps: TasksRouterDeps): Router {
         throw new AppError(422, 'VALIDATION_ERROR', { fields: parsed.fields });
       }
 
-      res.status(201).json({ data: deps.service.createTask(boardId, parsed.value) });
+      const task = deps.db.transaction(() => {
+        deps.projects?.assignee(boardId, parsed.value.assigneeId);
+        const created = deps.service.createTask(boardId, parsed.value);
+        if (deps.projects) deps.projects.attachTask(created, currentUser(res).id);
+        return created;
+      })();
+      res.status(201).json({ data: deps.projects ? deps.projects.task(task) : task });
     }),
   );
 
@@ -43,7 +55,8 @@ export function tasksRouter(deps: TasksRouterDeps): Router {
     parseQuery(req.query as Record<string, unknown>, []);
     const boardId = assertUuidParam(pathParam(req.params.boardId));
     const taskId = assertUuidParam(pathParam(req.params.taskId));
-    res.status(200).json({ data: deps.service.getTask(boardId, taskId) });
+    const task = deps.service.getTask(boardId, taskId);
+    res.status(200).json({ data: deps.projects ? deps.projects.task(task) : task });
   });
 
   router.put(
@@ -60,9 +73,14 @@ export function tasksRouter(deps: TasksRouterDeps): Router {
         throw new AppError(422, 'VALIDATION_ERROR', { fields: parsed.fields });
       }
 
-      res
-        .status(200)
-        .json({ data: deps.service.updateTask(boardId, taskId, parsed.value) });
+      const task = deps.db.transaction(() => {
+        const existing = deps.service.getTask(boardId, taskId);
+        deps.projects?.assignee(boardId, parsed.value.assigneeId, existing.assigneeId);
+        const updated = deps.service.updateTask(boardId, taskId, parsed.value);
+        deps.projects?.log(boardId, currentUser(res).id, 'task.updated', updated.title);
+        return updated;
+      })();
+      res.status(200).json({ data: deps.projects ? deps.projects.task(task) : task });
     }),
   );
 
@@ -74,7 +92,11 @@ export function tasksRouter(deps: TasksRouterDeps): Router {
       const boardId = assertUuidParam(pathParam(req.params.boardId));
       const taskId = assertUuidParam(pathParam(req.params.taskId));
 
-      deps.service.deleteTask(boardId, taskId);
+      deps.db.transaction(() => {
+        const task = deps.service.getTask(boardId, taskId);
+        deps.service.deleteTask(boardId, taskId);
+        deps.projects?.log(boardId, currentUser(res).id, 'task.deleted', task.title);
+      })();
       res.status(204).end();
     }),
   );

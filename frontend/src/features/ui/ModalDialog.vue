@@ -52,6 +52,13 @@ function onKeydown(event: KeyboardEvent): void {
   const last = items[items.length - 1]!;
   const active = document.activeElement as HTMLElement | null;
 
+  // Disabling an input during an async save can move focus to <body>.
+  if (active === null || !panel.value?.contains(active)) {
+    event.preventDefault();
+    (event.shiftKey ? last : first).focus();
+    return;
+  }
+
   if (event.shiftKey && (active === first || active === null)) {
     event.preventDefault();
     last.focus();
@@ -71,6 +78,7 @@ function onOverlayClick(): void {
 
 onMounted(async () => {
   opener = document.activeElement as HTMLElement | null;
+  document.addEventListener('keydown', onKeydown, true);
   await nextTick();
   const items = focusable();
   if (props.initialFocus !== 'initial') {
@@ -82,6 +90,7 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+  document.removeEventListener('keydown', onKeydown, true);
   if (opener !== null && document.contains(opener)) {
     opener.focus();
   }
@@ -97,7 +106,6 @@ onBeforeUnmount(() => {
       role="dialog"
       aria-modal="true"
       :aria-label="props.title"
-      @keydown="onKeydown"
     >
       <header class="modal-header">
         <h2 class="modal-title">{{ props.title }}</h2>

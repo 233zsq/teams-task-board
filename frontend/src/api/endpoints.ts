@@ -10,7 +10,7 @@ import { createApiClient, type ApiClient } from './client';
 
 export interface ApiEndpoints {
   health(signal?: AbortSignal): Promise<HealthData>;
-  listMembers(signal?: AbortSignal): Promise<Member[]>;
+  listMembers(signal?: AbortSignal, boardId?: string): Promise<Member[]>;
   listBoards(signal?: AbortSignal): Promise<Board[]>;
   getBoard(boardId: string, signal?: AbortSignal): Promise<Board>;
   createBoard(input: CreateBoardInput): Promise<Board>;
@@ -30,7 +30,7 @@ export function createApiEndpoints(client: ApiClient): ApiEndpoints {
   return {
     health: (signal) => client.request<HealthData>('GET', '/health', { signal }),
 
-    listMembers: (signal) => client.request<Member[]>('GET', '/members', { signal }),
+    listMembers: (signal, boardId) => client.request<Member[]>('GET', boardId ? `/members?boardId=${encode(boardId)}` : '/members', { signal }),
 
     listBoards: (signal) => client.request<Board[]>('GET', '/boards', { signal }),
 

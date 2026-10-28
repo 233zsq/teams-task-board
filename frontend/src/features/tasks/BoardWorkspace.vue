@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router';
 import {
   TASK_STATUSES,
   businessToday,
+  isOverdue,
   formatBusinessTime,
   taskToFieldInput,
   type Task,
@@ -17,9 +18,22 @@ import DeleteConfirmDialog from './DeleteConfirmDialog.vue';
 import TaskColumn from './TaskColumn.vue';
 import TaskDetailPanel from './TaskDetailPanel.vue';
 import TaskFormDialog from './TaskFormDialog.vue';
+import ProjectPanel from '../projects/ProjectPanel.vue';
+import { account } from '../../state/account';
 
 const store = useWorkspaceStore();
 const state = store.state;
+const personalFilter = ref<'all' | 'assigned' | 'published'>('all');
+const progress = computed(() => {
+  const total = state.tasks.data.length;
+  const done = state.tasks.data.filter((task) => task.status === 'done').length;
+  return { total, done, overdue: state.tasks.data.filter((task) => isOverdue(task.dueDate, task.status, today.value)).length,
+    percent: total ? Math.round(done / total * 100) : 0 };
+});
+const visibleTasks = computed(() => state.tasks.data.filter((task) => personalFilter.value === 'all'
+  || (personalFilter.value === 'assigned' && task.assigneeId === account.user?.id)
+  || (personalFilter.value === 'published' && task.createdBy?.id === account.user?.id)));
+watch(() => state.currentBoardId, () => { personalFilter.value = 'all'; });
 
 /** Overdue is derived per load/refresh, never from a background timer. */
 const todayTick = ref(Date.now());
@@ -48,7 +62,7 @@ const actionError = ref<string | null>(null);
 
 const tasksByStatus = computed(() => {
   const groups: Record<TaskStatus, Task[]> = { todo: [], doing: [], done: [] };
-  for (const task of state.tasks.data) {
+  for (const task of visibleTasks.value) {
     groups[task.status].push(task);
   }
   return groups;
@@ -278,6 +292,20 @@ function onSaved(): void {
           </button>
         </div>
       </header>
+
+      <template v-if="account.user && state.board.status === 'ready' && state.board.data">
+        <ProjectPanel :board="state.board.data" />
+        <div class="project-summary" aria-label="项目进度">
+          <div><span>任务总数</span><strong>{{ progress.total }}</strong></div><div><span>已完成</span><strong>{{ progress.done }}</strong></div><div><span>已逾期</span><strong :class="{ 'text-danger': progress.overdue > 0 }">{{ progress.overdue }}</strong></div><div class="project-completion"><span>完成进度 <strong>{{ progress.percent }}%</strong></span><progress :value="progress.done" :max="progress.total || 1">{{ progress.percent }}%</progress></div>
+        </div>
+        <div class="personal-filter" role="group" aria-label="任务视图">
+          <button :class="{ 'is-active': personalFilter === 'all' }" :aria-pressed="personalFilter === 'all'" @click="personalFilter = 'all'">全部任务</button>
+          <button :class="{ 'is-active': personalFilter === 'assigned' }" :aria-pressed="personalFilter === 'assigned'" @click="personalFilter = 'assigned'">我负责的</button>
+          <button :class="{ 'is-active': personalFilter === 'published' }" :aria-pressed="personalFilter === 'published'" @click="personalFilter = 'published'">我发布的</button>
+          <span>当前项目 · {{ visibleTasks.length }} 项</span>
+        </div>
+        <p v-if="personalFilter !== 'all' && !visibleTasks.length" class="project-empty" role="status">当前项目暂无{{ personalFilter === 'assigned' ? '分配给你的' : '你发布的' }}任务</p>
+      </template>
 
       <p class="scroll-hint" aria-hidden="true">← 左右滑动查看三列 →</p>
 

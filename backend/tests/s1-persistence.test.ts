@@ -27,6 +27,7 @@ describe('S1 persistence through application recreation', () => {
     reopened = openDatabase(ctx.temp.path);
     const active = reopened;
     return createApp({
+      authentication: false,
       config: ctx.config, db: active, logger: createMemoryLogger().logger,
       schema: { assertCompatible: () => assertSchemaCompatible(active.raw, ctx.migrationsDir) },
     });

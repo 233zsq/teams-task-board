@@ -9,10 +9,15 @@ import { healthRouter, type SchemaGuard } from './health';
 import { membersRouter } from './members';
 import { tasksRouter } from './tasks';
 import { testOnlyRouter } from './test-only';
+import { accountService } from '../../modules/accounts/service';
+import { projectService } from '../../modules/projects/service';
+import { accountsRouter, requireSession } from './accounts';
+import { projectsRouter } from './projects';
 
 export interface ApiRuntime {
   now: () => Date;
   generateId: () => string;
+  authentication?: boolean;
 }
 
 export function registerRoutes(
@@ -35,9 +40,20 @@ export function registerRoutes(
   });
 
   app.use('/api/v1', healthRouter({ config, db, schema }));
-  app.use('/api/v1', membersRouter({ service: members }));
-  app.use('/api/v1', boardsRouter({ service: boards }));
-  app.use('/api/v1', tasksRouter({ service: tasks }));
+  const projects = runtime.authentication !== false ? projectService(db.raw, runtime.now) : undefined;
+  if (projects) {
+    const accounts = accountService(db.raw, runtime.now);
+    app.use('/api/v1', accountsRouter(accounts, config));
+    const guard = requireSession(accounts);
+    app.use('/api/v1', (req, res, next) => {
+      if (/^\/(boards|members)(\/|$)/.test(req.path)) guard(req, res, next);
+      else next();
+    });
+    app.use('/api/v1', projectsRouter(projects));
+  }
+  app.use('/api/v1', membersRouter({ service: members, projects }));
+  app.use('/api/v1', boardsRouter({ service: boards, projects, db: db.raw }));
+  app.use('/api/v1', tasksRouter({ service: tasks, projects, db: db.raw }));
 
   if (config.env === 'test') {
     app.use('/api/v1', testOnlyRouter());

@@ -8,13 +8,14 @@ export interface TaskRow {
   description: string;
   due_date: string | null;
   assignee_id: string | null;
+  assigned_user_id?: string | null;
   status: string;
   created_at: string;
   updated_at: string;
 }
 
 const TASK_COLUMNS =
-  'id, board_id, title, description, due_date, assignee_id, status, created_at, updated_at';
+  'id, board_id, title, description, due_date, assignee_id, status, created_at, updated_at, assigned_user_id';
 
 /** P0 order: createdAt then id, ascending (spec §4.3). */
 export function listTaskRows(db: Database.Database, boardId: string): TaskRow[] {
@@ -37,17 +38,18 @@ export function getTaskRow(
 
 export function insertTaskRow(db: Database.Database, row: TaskRow): void {
   db.prepare(
-    `INSERT INTO tasks (${TASK_COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO tasks (${TASK_COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).run(
     row.id,
     row.board_id,
     row.title,
     row.description,
     row.due_date,
-    row.assignee_id,
+    db.prepare('SELECT 1 FROM users WHERE id = ?').get(row.assignee_id) ? null : row.assignee_id,
     row.status,
     row.created_at,
     row.updated_at,
+    db.prepare('SELECT 1 FROM users WHERE id = ?').get(row.assignee_id) ? row.assignee_id : null,
   );
 }
 
@@ -55,16 +57,17 @@ export function updateTaskRow(db: Database.Database, row: TaskRow): number {
   const result = db
     .prepare(
       `UPDATE tasks
-         SET title = ?, description = ?, due_date = ?, assignee_id = ?, status = ?, updated_at = ?
+         SET title = ?, description = ?, due_date = ?, assignee_id = ?, status = ?, updated_at = ?, assigned_user_id = ?
        WHERE board_id = ? AND id = ?`,
     )
     .run(
       row.title,
       row.description,
       row.due_date,
-      row.assignee_id,
+      db.prepare('SELECT 1 FROM users WHERE id = ?').get(row.assignee_id) ? null : row.assignee_id,
       row.status,
       row.updated_at,
+      db.prepare('SELECT 1 FROM users WHERE id = ?').get(row.assignee_id) ? row.assignee_id : null,
       row.board_id,
       row.id,
     );
@@ -90,7 +93,7 @@ export function toTask(row: TaskRow): Task {
     title: row.title,
     description: row.description,
     dueDate: row.due_date,
-    assigneeId: row.assignee_id,
+    assigneeId: row.assigned_user_id ?? row.assignee_id,
     status: row.status as TaskStatus,
     createdAt: row.created_at,
     updatedAt: row.updated_at,

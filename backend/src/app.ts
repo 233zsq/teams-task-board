@@ -24,6 +24,8 @@ export interface AppDependencies {
   now?: () => Date;
   /** Injected so tests can drive deterministic IDs. */
   generateId?: () => string;
+  /** Legacy P0 contract fixtures only; production cannot disable authentication. */
+  authentication?: boolean;
 }
 
 export function createApp(deps: AppDependencies): Express {
@@ -31,6 +33,10 @@ export function createApp(deps: AppDependencies): Express {
 
   app.disable('x-powered-by');
   app.set('query parser', 'simple');
+  app.set('trust proxy', 'loopback');
+  if (deps.authentication === false && deps.config.env !== 'test') {
+    throw new Error('仅测试环境可运行历史匿名契约夹具');
+  }
 
   app.use(securityHeaders());
   app.use(requestLog(deps.logger));
@@ -39,6 +45,7 @@ export function createApp(deps: AppDependencies): Express {
   const runtime: ApiRuntime = {
     now: deps.now ?? (() => new Date()),
     generateId: deps.generateId ?? (() => randomUUID()),
+    authentication: deps.authentication !== false,
   };
   registerRoutes(app, deps.config, deps.db, deps.schema, runtime);
 

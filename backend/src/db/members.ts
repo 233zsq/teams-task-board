@@ -18,7 +18,7 @@ export function listMemberRows(db: Database.Database): MemberRow[] {
 
 export function memberExists(db: Database.Database, id: string): boolean {
   const row = db.prepare('SELECT 1 AS present FROM members WHERE id = ?').get(id);
-  return row !== undefined;
+  return row !== undefined || db.prepare('SELECT 1 FROM users WHERE id = ?').get(id) !== undefined;
 }
 
 export function toMember(row: MemberRow): Member {

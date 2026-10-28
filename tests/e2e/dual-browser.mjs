@@ -18,6 +18,8 @@
  *   A requested browser that cannot start fails; no substitute is launched.
  */
 import { browserConfig, launchBrowser } from './browser.mjs';
+import { registerTestSession } from './auth-session.mjs';
+let session;
 
 const BASE_URL = process.env.BASE_URL ?? 'http://127.0.0.1:3000';
 const BOARD_NAME = `E2E 双浏览器验证 ${new Date().toISOString().slice(11, 19)}`;
@@ -36,9 +38,10 @@ function check(name, condition, detail = '') {
 async function api(method, path, body) {
   const response = await fetch(`${BASE_URL}/api/v1${path}`, {
     method,
+    headers: { ...session?.headers, ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
     ...(body === undefined
       ? {}
-      : { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }),
+      : { body: JSON.stringify(body) }),
   });
   const text = await response.text();
   return { status: response.status, body: text === '' ? null : JSON.parse(text) };
@@ -78,6 +81,8 @@ async function main() {
     browsers.push(b.browser);
     const contextA = await a.browser.newContext({ viewport: { width: 1366, height: 900 } });
     const contextB = await b.browser.newContext({ viewport: { width: 1366, height: 900 } });
+    session = await registerTestSession(BASE_URL, '双浏览器回归用户');
+    await session.apply(contextA); await session.apply(contextB);
     const pageA = await contextA.newPage();
     const pageB = await contextB.newPage();
 

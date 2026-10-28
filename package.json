@@ -34,7 +34,8 @@
     "test:e2e:launcher": "node --test tests/e2e/browser.test.mjs",
     "check:browser": "node tests/e2e/release-regression.mjs",
     "package:candidate": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/package-candidate.ps1",
-    "test:e2e:s1": "npm run build && node tests/e2e/s1-persistence.mjs"
+    "test:e2e:s1": "npm run build && node tests/e2e/s1-persistence.mjs",
+    "check:accounts": "npm run build && node tests/e2e/accounts-projects.mjs"
   },
   "devDependencies": {
     "concurrently": "9.1.0",

@@ -17,7 +17,7 @@
 
 - 已有 Node.js + TypeScript + Express 5 后端（骨架、健康检查、请求/安全边界、成员/看板/任务 API）、`better-sqlite3` 数据库初始化/迁移与演示数据命令。
 - 已有 shared 契约包（ESM + CJS）、Vue 3 前端工作区、shared/backend/frontend 测试、一键 HTTP 回归与双浏览器 E2E；当前命令和版本从 package scripts 与验证记录读取。
-- S1～S4 的实现与自测已完成；受密码保护的公网演示已上线，当前来源和状态读 `deploy/DEPLOYMENT.md`。S5 未选择，组员独立复验未执行；用户明确其不阻塞本次部署。历史及补验材料见 `verification/`。
+- S1～S4 已实现；S6 增加个人账号、项目授权、负责人/发布者、个人视图与动态，契约读 spec 第 1 节 v0.6 增量，验证见 `verification/accounts-projects/README.md`。线上版本读 `deploy/DEPLOYMENT.md`。组员独立复验未执行，用户明确其不阻塞部署。
 - 命令与依赖版本以根 `package.json`、各工作区 `package.json` 和锁文件为准。运行 `npm run` 可查看当前脚本，不执行文档中尚未提供的命令。
 
 ## 工作循环
@@ -31,6 +31,7 @@
 ## 工程护栏
 
 - 后端新增写路由必须经过现有 `writeRoute` 边界；保持路由匹配、媒体类型、正文大小、JSON 校验和错误映射顺序。契约细节读 spec，不在代码中另创错误格式。
+- 正常运行要求个人会话、CSRF 和项目成员资格；`authentication: false` 仅限 `env=test` 的旧契约夹具，不能作为运行配置。新业务路由须覆盖匿名、非成员及普通成员越权场景。
 - 数据库测试使用独立的临时真实 SQLite 文件并清理；不写仓库 `data/`，不用永远成功的内存替身冒充持久化验证。
 - 已应用迁移保持不变；新增迁移需连续编号并带校验和，覆盖空库初始化、重复初始化和旧库升级。
 - 业务日期使用纯字符串与明确的日历规则，时区为 `Asia/Shanghai`；不用 `Date` 解析 `YYYY-MM-DD`。

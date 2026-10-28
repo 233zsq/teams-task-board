@@ -1,11 +1,12 @@
 import { createApp } from 'vue';
-import App from './App.vue';
+import AccountGate from './features/accounts/AccountGate.vue';
 import { router } from './router';
 import './styles/base.css';
 import './styles/layout.css';
 import './styles/components.css';
+import './styles/accounts.css';
 
-const app = createApp(App);
+const app = createApp(AccountGate);
 
 app.config.errorHandler = (error) => {
   // Runtime rendering failures must never leave a blank workspace; the shell

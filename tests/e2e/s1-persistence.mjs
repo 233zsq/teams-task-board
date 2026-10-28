@@ -9,6 +9,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
+import { registerTestSession } from './auth-session.mjs';
+let session;
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const temp = await mkdtemp(path.join(os.tmpdir(), 'teamplan-s1-pr-'));
@@ -59,7 +61,7 @@ async function start() {
   });
 }
 async function get(route) {
-  const response = await fetch(`${base}/api/v1${route}`);
+  const response = await fetch(`${base}/api/v1${route}`, { headers: session?.headers });
   assert.equal(response.status, 200, `GET ${route}`);
   return (await response.json()).data;
 }
@@ -67,10 +69,13 @@ async function get(route) {
 try {
   await mkdir(output, { recursive: true });
   await runInit(); await start();
-  const members = await get('/members');
-  assert.equal(members.length, 4);
+  session = await registerTestSession(base, 'S1 持久化用户');
+  const peers = [session];
+  for (const label of ['S1 伙伴二', 'S1 伙伴三']) peers.push(await registerTestSession(base, label));
+  const members = peers.map(({ user }) => ({ id: user.id, displayName: user.displayName }));
   browser = await chromium.launch({ channel: process.env.E2E_BROWSER ?? 'msedge', headless: true });
   page = await browser.newPage({ viewport: { width: 1366, height: 1000 } });
+  await session.apply(page.context());
   page.setDefaultTimeout(15_000);
   const pageErrors = [];
   page.on('pageerror', error => pageErrors.push(error.message));
@@ -82,6 +87,12 @@ try {
   const boards = await get('/boards');
   assert.equal(boards.length, 1);
   const boardId = boards[0].id;
+  for (const peer of peers.slice(1)) {
+    const added = await fetch(`${base}/api/v1/boards/${boardId}/members`, { method: 'POST',
+      headers: { ...session.headers, 'Content-Type': 'application/json' }, body: JSON.stringify({ username: peer.user.username }) });
+    assert.equal(added.status, 200);
+  }
+  await page.getByRole('button', { name: '刷新看板', exact: true }).click();
   const description = '真实浏览器、真实 API、真实 SQLite。\n<script>window.__s1Injected = true</script>';
   for (const [index, status] of ['todo', 'doing', 'done'].entries()) {
     await page.getByRole('button', { name: '在待办列新建任务', exact: true }).click();
@@ -124,7 +135,9 @@ try {
   await page.goto(`${base}/boards/${boardId}`);
   await page.waitForFunction(() => document.querySelectorAll('.task-card').length === 4);
   assert.deepEqual(await get(`/boards/${boardId}/tasks`), before);
-  assert.deepEqual(await get('/boards'), boards); assert.deepEqual(await get('/members'), members);
+  const restoredBoards = await get('/boards');
+  assert.equal(restoredBoards[0].id, boards[0].id); assert.equal(restoredBoards[0].memberCount, 3);
+  assert.deepEqual((await get('/members')).map(({ id }) => id).sort(), members.map(({ id }) => id).sort());
   assert.deepEqual(pageErrors, []);
   await writeFile(path.join(output, 'persistence.json'), JSON.stringify({
     date: new Date().toISOString(), browser: browser.version(), node: process.version,

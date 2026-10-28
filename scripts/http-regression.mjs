@@ -15,6 +15,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { registerTestSession } from '../tests/e2e/auth-session.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const backendDir = path.join(rootDir, 'backend');
@@ -32,6 +33,7 @@ const port = 3400 + Math.floor(Math.random() * 400);
 
 const results = [];
 let failures = 0;
+let session;
 
 function check(name, condition, detail = '') {
   const ok = Boolean(condition);
@@ -45,6 +47,7 @@ function request({ method = 'GET', requestPath = '/', headers = {}, body = undef
   return new Promise((resolve, reject) => {
     const payload = body === undefined ? undefined : Buffer.from(body);
     const finalHeaders = {
+      ...session?.headers,
       Host: host ?? `127.0.0.1:${port}`,
       ...(payload === undefined
         ? {}
@@ -145,6 +148,7 @@ async function main() {
       throw new Error('后端未能在超时时间内启动');
     }
 
+    session = await registerTestSession(`http://127.0.0.1:${port}`, 'HTTP 回归用户');
     await runChecks();
   } finally {
     server.kill();
@@ -204,13 +208,13 @@ async function runChecks() {
 
   // --- members ---
   const members = await request({ requestPath: '/api/v1/members' });
-  check('GET /members 返回四条预置成员', members.status === 200 && members.json?.data?.length === 4);
+  check('GET /members 返回当前账号可见成员', members.status === 200 && members.json?.data?.length === 1);
   check(
-    '成员按 A～D 顺序返回且无鉴权字段',
-    members.json?.data?.map((item) => item.displayName).join(',') === '成员 A,成员 B,成员 C,成员 D' &&
+    '成员目录显示当前账号昵称且无鉴权字段',
+    members.json?.data?.map((item) => item.displayName).join(',') === 'HTTP 回归用户' &&
       Object.keys(members.json.data[0]).sort().join(',') === 'displayName,id',
   );
-  const memberId = members.json.data[1].id;
+  const memberId = members.json.data[0].id;
 
   // --- boards: happy path and validation ---
   const createdBoard = await request({
@@ -388,7 +392,7 @@ async function runChecks() {
       status: 'todo',
     }),
   });
-  check('不存在的负责人 → 422 且指明 assigneeId', unknownAssignee.status === 422 && unknownAssignee.json?.error?.fields?.assigneeId === '负责人不存在');
+  check('非项目成员负责人 → 422 且指明 assigneeId', unknownAssignee.status === 422 && unknownAssignee.json?.error?.fields?.assigneeId === '请选择当前项目成员');
 
   const updated = await request({
     method: 'PUT',

@@ -5,6 +5,12 @@
  */
 
 export const ERROR_CODES = {
+  UNAUTHENTICATED: 'UNAUTHENTICATED',
+  INVALID_CREDENTIALS: 'INVALID_CREDENTIALS',
+  ACCESS_DENIED: 'ACCESS_DENIED',
+  ACCOUNT_EXISTS: 'ACCOUNT_EXISTS',
+  RATE_LIMITED: 'RATE_LIMITED',
+  CSRF_INVALID: 'CSRF_INVALID',
   BAD_REQUEST: 'BAD_REQUEST',
   EDITOR_KEY_REQUIRED: 'EDITOR_KEY_REQUIRED',
   FORBIDDEN: 'FORBIDDEN',
@@ -20,6 +26,12 @@ export const ERROR_CODES = {
 export type ErrorCode = keyof typeof ERROR_CODES;
 
 export const ERROR_MESSAGES: Record<ErrorCode, string> = {
+  UNAUTHENTICATED: '请先登录，或重新登录已过期的会话',
+  INVALID_CREDENTIALS: '用户名或密码不正确',
+  ACCESS_DENIED: '仅项目负责人可以进行此操作',
+  ACCOUNT_EXISTS: '该用户名已被使用',
+  RATE_LIMITED: '操作过于频繁，请稍后再试',
+  CSRF_INVALID: '会话校验失败，请刷新页面后重试',
   BAD_REQUEST: '请求格式不正确',
   EDITOR_KEY_REQUIRED: '需要维护密钥',
   FORBIDDEN: '请求来源不在允许的主机列表',

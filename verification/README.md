@@ -1,5 +1,7 @@
 # 验证记录索引
 
+2026-10-28：账号与项目协作版通过 207 项测试、50 项 API、22 项跨浏览器及 8 组双账号流程，见 [S6 验证](accounts-projects/README.md)。以下旧记录按其原提交保留。
+
 本目录保存 S1～S4 与核心门禁的可复现证据，配合 [checklist.md](../checklist.md) 的 CHECK 编号与
 [tasks.md](../tasks.md) 的切片验收卡使用。每条记录都写明**被测提交、环境、执行命令、结果与残留项**；
 截图见 [screenshots](screenshots/)。切片级的 AI 过程记录见 [ai-log.md](../ai-log.md)。
