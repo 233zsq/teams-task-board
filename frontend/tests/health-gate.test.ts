@@ -49,7 +49,7 @@ describe('health gate', () => {
     expect(wrapper.find('[data-testid="workspace"]').exists()).toBe(true);
   });
 
-  it('asks for a refresh when the server reports enabled extensions', async () => {
+  it('supports priority and filters without asking for an unsupported-build refresh', async () => {
     const api = createFakeApi({
       health: async () => ({
         status: 'ok' as const,
@@ -63,7 +63,7 @@ describe('health gate', () => {
     });
     await flushPromises();
 
-    expect(wrapper.text()).toContain('服务端启用了扩展功能');
-    expect(wrapper.text()).toContain('请刷新页面获取最新前端');
+    expect(wrapper.text()).not.toContain('服务端启用了扩展功能');
+    expect(wrapper.text()).toContain('工作区内容');
   });
 });

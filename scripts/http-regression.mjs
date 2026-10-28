@@ -119,7 +119,8 @@ async function waitForHealth(timeoutMs = 15000) {
   return false;
 }
 
-const env = { DATABASE_PATH: databasePath, PORT: String(port), HOST: '127.0.0.1', NODE_ENV: 'production', ALLOWED_HOSTS: '' };
+// This runner pins the feature-off compatibility contract; search has its own full-feature checks.
+const env = { DATABASE_PATH: databasePath, PORT: String(port), HOST: '127.0.0.1', NODE_ENV: 'production', ALLOWED_HOSTS: '', ENABLE_PRIORITY: '0', ENABLE_FILTERS: '0' };
 
 async function main() {
   const init = await run(process.execPath, [initEntry], env);

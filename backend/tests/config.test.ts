@@ -26,8 +26,8 @@ describe('loadConfig', () => {
     expect(config.databasePath).toBe(path.resolve(ROOT, 'data/team-plan.sqlite'));
     expect(config.allowedHosts).toEqual(['127.0.0.1', 'localhost', '[::1]']);
     expect(config.features).toEqual({
-      priority: false,
-      filters: false,
+      priority: true,
+      filters: true,
       ordering: false,
       sharing: false,
     });
@@ -46,11 +46,13 @@ describe('loadConfig', () => {
     expect(problems.some((problem) => problem.includes('ENABLE_PRIORITY'))).toBe(true);
   });
 
-  it('requires priority when filters are enabled and rejects unimplemented extensions', () => {
+  it('requires priority when filters are enabled', () => {
     const problems = captureProblems({ ENABLE_PRIORITY: '0', ENABLE_FILTERS: '1' });
 
     expect(problems.some((problem) => problem.includes('ENABLE_FILTERS=1 需要'))).toBe(true);
-    expect(problems.some((problem) => problem.includes('扩展功能尚未实现'))).toBe(true);
+    expect(captureProblems({ ENABLE_PRIORITY: '1', ENABLE_FILTERS: '1' })).toEqual([]);
+    expect(captureProblems({ ENABLE_PRIORITY: '1', ENABLE_FILTERS: '0' })).toEqual([]);
+    expect(captureProblems({ ENABLE_PRIORITY: '0', ENABLE_FILTERS: '0' })).toEqual([]);
   });
 
   it('rejects sharing in the TASK-002 stage', () => {

@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import {
   STATUS_LABELS,
+  PRIORITY_LABELS,
   TASK_STATUSES,
   formatBusinessDateTime,
   isOverdue,
@@ -45,6 +46,7 @@ const updatedAtText = computed(() => formatBusinessDateTime(props.task.updatedAt
       </p>
 
       <dl class="detail__grid">
+        <div v-if="task.priority"><dt>优先级</dt><dd><span class="chip chip--priority" :class="`chip--priority-${task.priority}`">{{ PRIORITY_LABELS[task.priority] }}</span></dd></div>
         <div v-if="'createdBy' in task"><dt>发布者</dt><dd>{{ task.createdBy?.displayName ?? '历史任务（发布者未知）' }}</dd></div>
         <div>
           <dt>负责人</dt>

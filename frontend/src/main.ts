@@ -5,6 +5,7 @@ import './styles/base.css';
 import './styles/layout.css';
 import './styles/components.css';
 import './styles/accounts.css';
+import './styles/task-search.css';
 
 const app = createApp(AccountGate);
 

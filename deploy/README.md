@@ -4,6 +4,8 @@
 
 ## 当前访问方式
 
+2026-10-28 S5 升级启用 `ENABLE_PRIORITY=1`、`ENABLE_FILTERS=1`，追加 0003 并保留所有现有记录。停服快照后，在重新开放写入前比较账号、会话、项目、成员、任务及动态的全部旧行；任何旧值改变则中止并回退。`node tests/e2e/task-search.mjs --api-only` 验证服务器开启模式；原 50 项 HTTP 脚本仅验证关闭模式兼容。
+
 - 域名 `tboard.bigdogaaa.cn`，沿用原 DNS 和 TLS，不修改其他站点。
 - 登录/注册页和静态资源公开；私有 API 由应用执行个人会话、CSRF 和项目成员授权。
 - 不再要求 Nginx Basic Auth。旧 `team` 统一凭据不是个人账号；旧凭据文件保留在受保护目录，不继续使用或传播。

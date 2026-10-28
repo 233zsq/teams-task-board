@@ -38,8 +38,8 @@ describe('P0 migrations and seed', () => {
     const result = init(temp);
 
     expect(result.created).toBe(false);
-    expect(result.applied).toEqual(['0001', '0002']);
-    expect(result.currentVersion).toBe('0002');
+    expect(result.applied).toEqual(['0001', '0002', '0003']);
+    expect(result.currentVersion).toBe('0003');
     expect(result.memberCount).toBe(4);
 
     const db = openDatabase(temp.path);
@@ -121,7 +121,7 @@ describe('P0 migrations and seed', () => {
     const second = init(temp);
     expect(second.created).toBe(false);
     expect(second.applied).toEqual([]);
-    expect(second.currentVersion).toBe('0002');
+    expect(second.currentVersion).toBe('0003');
     expect(second.memberCount).toBe(4);
 
     const reopened = openDatabase(temp.path);
@@ -140,7 +140,7 @@ describe('P0 migrations and seed', () => {
             .prepare('SELECT COUNT(*) AS count FROM schema_migrations')
             .get() as { count: number }
         ).count,
-      ).toBe(2);
+      ).toBe(3);
     } finally {
       reopened.close();
     }

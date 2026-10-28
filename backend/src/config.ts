@@ -42,10 +42,11 @@ function readFlag(
   env: NodeJS.ProcessEnv,
   key: string,
   problems: string[],
+  defaultValue = false,
 ): boolean {
   const raw = read(env, key);
   if (raw === undefined) {
-    return false;
+    return defaultValue;
   }
   if (raw === '0') {
     return false;
@@ -129,8 +130,8 @@ export function loadConfig(env: NodeJS.ProcessEnv, projectRoot: string): AppConf
   }
 
   const features: FeatureFlags = {
-    priority: readFlag(env, 'ENABLE_PRIORITY', problems),
-    filters: readFlag(env, 'ENABLE_FILTERS', problems),
+    priority: readFlag(env, 'ENABLE_PRIORITY', problems, true),
+    filters: readFlag(env, 'ENABLE_FILTERS', problems, true),
     ordering: readFlag(env, 'ENABLE_ORDERING', problems),
     sharing: readFlag(env, 'ENABLE_SHARING', problems),
   };
@@ -139,9 +140,9 @@ export function loadConfig(env: NodeJS.ProcessEnv, projectRoot: string): AppConf
     problems.push('ENABLE_FILTERS=1 需要 ENABLE_PRIORITY=1');
   }
 
-  if (features.priority || features.filters || features.ordering || features.sharing) {
+  if (features.ordering || features.sharing) {
     problems.push(
-      '扩展功能尚未实现；TASK-002 阶段要求 ENABLE_PRIORITY、ENABLE_FILTERS、ENABLE_ORDERING、ENABLE_SHARING 均为 0（TASK-022/024/026/028 再开启）',
+      '扩展功能尚未实现；ENABLE_ORDERING、ENABLE_SHARING 必须为 0',
     );
   }
 

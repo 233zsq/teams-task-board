@@ -23,7 +23,7 @@ const featureNotice = computed(() => {
   if (features === undefined) {
     return null;
   }
-  return features.priority || features.filters || features.ordering || features.sharing
+  return features.ordering || features.sharing
     ? '服务端启用了扩展功能，当前页面未包含对应界面；请刷新页面获取最新前端。'
     : null;
 });

@@ -9,7 +9,10 @@ export function projectsRouter(service: ProjectService): Router {
   const router = Router();
   router.use('/boards/:boardId', (req, res, next) => {
     service.access(assertUuidParam(pathParam(req.params.boardId)), currentUser(res).id);
-    parseQuery(req.query as Record<string, unknown>, []);
+    // Task-list query validation belongs to the feature-aware task route.
+    if (!(['GET', 'HEAD'].includes(req.method) && req.path === '/tasks')) {
+      parseQuery(req.query as Record<string, unknown>, []);
+    }
     next();
   });
   router.get('/boards/:boardId/members', (req, res) => {

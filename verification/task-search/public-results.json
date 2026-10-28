@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-28T06:04:37.599Z",
+  "site": "https://tboard.bigdogaaa.cn",
+  "results": [
+    {
+      "name": "HTTPS login and new feature flags",
+      "status": "passed"
+    },
+    {
+      "name": "anonymous workspace and query APIs remain protected",
+      "status": "passed"
+    },
+    {
+      "name": "real registered accounts and secure sessions",
+      "status": "passed"
+    },
+    {
+      "name": "project isolation, membership and task priority storage",
+      "status": "passed"
+    },
+    {
+      "name": "literal keyword and combined inclusive filters",
+      "status": "passed"
+    },
+    {
+      "name": "invalid and repeated queries are rejected",
+      "status": "passed"
+    },
+    {
+      "name": "real public Edge login and combined search",
+      "status": "passed"
+    },
+    {
+      "name": "priority edit exits filter once and persists after reload",
+      "status": "passed"
+    }
+  ],
+  "runtimeErrors": [],
+  "fixtureCleanup": "passed: only 2 generated accounts, 1 test project and 3 test tasks removed by exact IDs; pre-existing account/project retained; integrity ok"
+}

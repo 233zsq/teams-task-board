@@ -8,6 +8,9 @@ import {
   parseAssigneeId,
   parseDueDate,
   parseTaskStatus,
+  parseTaskPriority,
+  PRIORITY_LABELS,
+  TASK_PRIORITIES,
   type Member,
   type Task,
   type TaskFieldInput,
@@ -40,6 +43,7 @@ const emit = defineEmits<{
 }>();
 
 const store = useWorkspaceStore();
+const priorityEnabled = computed(() => store.state.health.data?.features.priority === true);
 
 const draft = reactive({
   title: props.task?.title ?? '',
@@ -47,6 +51,7 @@ const draft = reactive({
   dueDate: props.task?.dueDate ?? '',
   assigneeId: props.task?.assigneeId ?? '',
   status: (props.task?.status ?? props.initialStatus) as TaskStatus,
+  priority: props.task?.priority ?? 'medium',
 });
 
 const initialSnapshot = JSON.stringify(draft);
@@ -66,13 +71,14 @@ const descriptionInput = ref<HTMLTextAreaElement | null>(null);
 const dueDateInput = ref<HTMLInputElement | null>(null);
 const assigneeSelect = ref<HTMLSelectElement | null>(null);
 const statusSelect = ref<HTMLSelectElement | null>(null);
+const prioritySelect = ref<HTMLSelectElement | null>(null);
 const discardKeepButton = ref<HTMLButtonElement | null>(null);
 
 const isDirty = computed(() => JSON.stringify(draft) !== initialSnapshot);
 const membersUnavailable = computed(() => props.members.status !== 'ready');
 const heading = computed(() => (props.mode === 'create' ? '新建任务' : '编辑任务'));
 
-const fieldOrder = ['title', 'description', 'dueDate', 'assigneeId', 'status'] as const;
+const fieldOrder = ['title', 'description', 'dueDate', 'assigneeId', 'status', 'priority'] as const;
 
 async function focusField(field: string): Promise<void> {
   await nextTick();
@@ -82,6 +88,7 @@ async function focusField(field: string): Promise<void> {
     dueDate: dueDateInput.value,
     assigneeId: assigneeSelect.value,
     status: statusSelect.value,
+    priority: prioritySelect.value,
   };
   map[field]?.focus();
 }
@@ -121,6 +128,8 @@ function validate(): TaskFieldInput | null {
   if (!status.ok) {
     mark('status', Object.values(status.fields)[0] ?? '状态不合法');
   }
+  const priority = parseTaskPriority(draft.priority);
+  if (priorityEnabled.value && !priority.ok) mark('priority', '请选择高、中或低优先级');
 
   if (firstInvalid !== null) {
     void focusField(firstInvalid);
@@ -133,6 +142,7 @@ function validate(): TaskFieldInput | null {
     dueDate: dueDate.ok ? dueDate.value : null,
     assigneeId: assigneeId.ok ? assigneeId.value : null,
     status: status.ok ? status.value : 'todo',
+    ...(priorityEnabled.value && priority.ok ? { priority: priority.value } : {}),
   };
 }
 
@@ -369,6 +379,13 @@ onBeforeUnmount(() => {
         <p v-if="fieldErrors.status" class="field-error">{{ fieldErrors.status }}</p>
       </div>
 
+      <div v-if="priorityEnabled" class="form-field">
+        <label class="field-label" for="task-priority">优先级</label>
+        <select id="task-priority" ref="prioritySelect" v-model="draft.priority" class="select" :disabled="saving" :aria-invalid="fieldErrors.priority !== undefined">
+          <option v-for="priority in TASK_PRIORITIES" :key="priority" :value="priority">{{ PRIORITY_LABELS[priority] }}</option>
+        </select>
+        <p v-if="fieldErrors.priority" class="field-error">{{ fieldErrors.priority }}</p>
+      </div>
       <p v-if="errorText" class="field-error" role="alert">{{ errorText }}</p>
 
       <div v-if="taskGone" class="inline-confirm" role="alert">

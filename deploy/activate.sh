@@ -78,8 +78,8 @@ HOST=127.0.0.1
 PORT=$port
 ALLOWED_HOSTS=$domain,127.0.0.1,localhost
 DATABASE_PATH=/var/lib/team-task-board/team-plan.sqlite
-ENABLE_PRIORITY=0
-ENABLE_FILTERS=0
+ENABLE_PRIORITY=1
+ENABLE_FILTERS=1
 ENABLE_ORDERING=0
 ENABLE_SHARING=0
 EOF
@@ -113,6 +113,29 @@ PY
 fi
 ln -sfn "$release" "$root/current"
 runuser -u teamboard -- env DATABASE_PATH=/var/lib/team-task-board/team-plan.sqlite /usr/local/bin/node "$root/current/backend/dist/db/init.js"
+if ((database_captured)); then
+    # The app is still stopped: compare every pre-existing row before reopening writes.
+    python3 - "$backup/database.sqlite" <<'PY'
+import sqlite3, sys, json
+old = sqlite3.connect('file:' + sys.argv[1] + '?mode=ro', uri=True)
+new = sqlite3.connect('file:/var/lib/team-task-board/team-plan.sqlite?mode=ro', uri=True)
+tables = {row[0] for row in old.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+preserved = {}
+for table in ['users', 'sessions', 'boards', 'board_members', 'tasks', 'project_activity', 'members']:
+    if table not in tables:
+        continue
+    columns = ','.join('"' + row[1].replace('"', '""') + '"' for row in old.execute('PRAGMA table_info("' + table + '")'))
+    before = set(old.execute('SELECT ' + columns + ' FROM "' + table + '"').fetchall())
+    after = set(new.execute('SELECT ' + columns + ' FROM "' + table + '"').fetchall())
+    if not before.issubset(after):
+        raise SystemExit('Migration changed existing data in ' + table)
+    preserved[table] = len(before)
+assert new.execute('PRAGMA integrity_check').fetchone()[0] == 'ok'
+assert new.execute('PRAGMA foreign_key_check').fetchall() == []
+print('MIGRATION_PRESERVED_ROWS=' + json.dumps(preserved))
+old.close(); new.close()
+PY
+fi
 install -m 644 "$release/deploy/team-task-board.service" /etc/systemd/system/team-task-board.service
 install -m 644 "$release/deploy/team-task-board-backup.service" /etc/systemd/system/team-task-board-backup.service
 install -m 644 "$release/deploy/team-task-board-backup.timer" /etc/systemd/system/team-task-board-backup.timer

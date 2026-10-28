@@ -5,6 +5,7 @@ import type {
   Member,
   Task,
   TaskFieldInput,
+  TaskFilters,
 } from '@team-plan/shared';
 import { createApiClient, type ApiClient } from './client';
 
@@ -14,7 +15,7 @@ export interface ApiEndpoints {
   listBoards(signal?: AbortSignal): Promise<Board[]>;
   getBoard(boardId: string, signal?: AbortSignal): Promise<Board>;
   createBoard(input: CreateBoardInput): Promise<Board>;
-  listTasks(boardId: string, signal?: AbortSignal): Promise<Task[]>;
+  listTasks(boardId: string, signal?: AbortSignal, filters?: TaskFilters): Promise<Task[]>;
   getTask(boardId: string, taskId: string, signal?: AbortSignal): Promise<Task>;
   createTask(boardId: string, input: TaskFieldInput): Promise<Task>;
   updateTask(boardId: string, taskId: string, input: TaskFieldInput): Promise<Task>;
@@ -40,8 +41,11 @@ export function createApiEndpoints(client: ApiClient): ApiEndpoints {
     createBoard: (input) =>
       client.request<Board>('POST', '/boards', { body: input }),
 
-    listTasks: (boardId, signal) =>
-      client.request<Task[]>('GET', `/boards/${encode(boardId)}/tasks`, { signal }),
+    listTasks: (boardId, signal, filters = {}) => {
+      const query = new URLSearchParams();
+      for (const [key, value] of Object.entries(filters)) if (value !== undefined && value !== '') query.set(key, value);
+      return client.request<Task[]>('GET', `/boards/${encode(boardId)}/tasks${query.size ? `?${query}` : ''}`, { signal });
+    },
 
     getTask: (boardId, taskId, signal) =>
       client.request<Task>(

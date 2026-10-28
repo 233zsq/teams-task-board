@@ -12,7 +12,7 @@
 
 注册账号（用户名、昵称和至少 12 位密码），创建看板即成为项目负责人。请伙伴先注册，再在“项目成员”中按用户名添加。任务自动记录发布者，可分配给项目成员；通过“刷新看板”读取他人的修改。
 
-![账号协作版实际浏览器界面](verification/accounts-projects/project-1366.png)
+![优先级与搜索筛选实际浏览器界面](verification/task-search/chrome-1366.png)
 
 ## 已实现功能
 
@@ -22,14 +22,15 @@
 - 项目负责人、添加/移除成员、负责人转交及项目访问隔离。
 - 任务发布者自动记录，负责人从项目成员中选择，支持截止日期和逾期提示。
 - “我负责的 / 我发布的”任务视图、项目进度、最近操作动态。
+- 高/中/低优先级，按标题/描述关键词、负责人、截止日期组合筛选；支持清空、空结果与失败重试。
 - SQLite 持久化、手动刷新、错误恢复、窄屏适配与键盘操作。
 - 公网 HTTPS、个人会话保护、服务开机自启和每日数据库备份。
 
-优先级、组合筛选、拖拽、只读分享、评论、邮件/短信找回密码和实时同步尚未实现。
+拖拽、只读分享、评论、邮件/短信找回密码和实时同步尚未实现。
 
 ## 验证与交付状态
 
-账号版通过 207 项单元/集成测试（shared 16 + backend 130 + frontend 61）、50 项 API 回归、22 项跨浏览器 E2E、8 组真实双账号协作流程，以及 Chrome/Edge 的尺寸、键盘和 HTTP 故障补验；类型检查、生产构建及重启持久化验证通过。证据见 [账号协作验收](verification/accounts-projects/README.md)。公网结果单独记录在 [部署记录](deploy/DEPLOYMENT.md)，不将本地测试当作线上结果。
+当前 229 项单元/集成测试（shared 20 + backend 140 + frontend 69）、50 项兼容 API 回归、22 项跨浏览器 E2E、8 组双账号协作及 15 组优先级/搜索验收通过；类型检查、生产构建和双品牌故障/竞态验证通过。见 [搜索筛选验证](verification/task-search/README.md) 和 [账号协作验收](verification/accounts-projects/README.md)。公网结果单独记入 [部署记录](deploy/DEPLOYMENT.md)，不将本地测试当作线上结果。
 
 成员 A 的 S1 回归已接入真实账号；旧版本的 190 项记录保留在 [成员 A 的 S1 记录](verification/member-a-s1/README.md)。
 
@@ -92,7 +93,7 @@ npm start
 
 ```powershell
 npm run typecheck        # 三个包类型检查
-npm test                 # shared + backend + frontend（207 项）
+npm test                 # shared + backend + frontend（229 项）
 npm run check:api        # 一键 HTTP 契约与安全回归（临时库，50 项）
 npm run test:e2e         # 双浏览器 E2E（需服务已启动；E2E_BROWSER=chrome 可换 Chrome）
 npm run test:e2e:launcher # 浏览器选择与禁止静默回退的回归
@@ -100,9 +101,11 @@ npm run test:e2e:s1      # 构建后使用临时库/随机端口，真实创建�
 # 隔离服务、临时库及 Chrome/Edge 配置见 verification/RELEASE-candidate.md
 npm run check:browser
 npm run check:accounts   # 临时库、双账号注册与项目权限的完整浏览器流程
+npm run check:search     # 开启优先级/筛选的 HTTP + Chrome/Edge 完整场景
 ```
 
 - `npm run db:init` 只应用待执行迁移并幂等写入四名固定成员，可重复执行，不删除看板或任务。
+- 默认启用优先级/搜索；旧 `.env` 可将 `ENABLE_PRIORITY=1`、`ENABLE_FILTERS=1`。两项同时设为 0 可保留旧 API，已有优先级不会被清除。`check:api` 固定验证关闭扩展的兼容模式，`check:search` 验证开启模式。
 - 数据库未初始化、结构不兼容或配置无效时，服务明确失败，不回退到内存库或另一个空库。
 - 配置键以 `.env.example` 为入口；`.env` 和本地数据库不提交仓库。
 

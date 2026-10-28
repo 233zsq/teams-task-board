@@ -1,3 +1,28 @@
+# 优先级与搜索筛选部署（当前）
+
+**已上线：[tboard.bigdogaaa.cn](https://tboard.bigdogaaa.cn/)**。2026-10-28 14:04（北京时间）完成升级；刷新页面后可使用优先级和组合搜索。
+
+| 项 | 实际值 |
+| --- | --- |
+| 部署源码 | `f1ea704a0d688c12aac342fae6206ca03f62d696` |
+| 部署包 SHA256 | `66a0e6c7540102002ef5c84c042b02a34d81b4c476a34e7ed21bab23c2d86cc1`，服务器一致 |
+| 数据结构 / 开关 | 0003；priority=true，filters=true；ordering/sharing=false |
+| 升级前快照 | `/var/backups/team-task-board/deployment-20261028T060410Z/database.sqlite`，配置一并备份 |
+| 旧数据核对 | 停服后逐行比较：1 账号、1 会话、1 项目、1 项目成员、0 任务、1 动态、4 历史成员全部原样保留 |
+| 服务 / 备份 | 应用 active/enabled；备份 timer active/enabled，14:05:26 最后备份 success |
+
+- 本地 229 项测试、类型/构建、搜索 HTTP + 两品牌 UI 15/15、兼容 API 50/50、原协作 22/22、账号 8/8，以及故障/竞态补验通过，详见 [S5 验证](../verification/task-search/README.md)。生产依赖审计 0 项。
+- Linux 暂存目录重新安装 134 个生产包（审计 138），0 vulnerabilities；兼容模式 50/50，开启模式真实服务搜索契约 3/3 通过。激活前 bash 语法检查通过，0003 后逐行旧数据校验通过再开放写入。
+- 实际公网检查 **8/8**：HTTPS/开关、匿名 API 401、真实账号与 Cookie、项目隔离与优先级、字面关键词/AND/包含端点日期、非法/重复参数、真实 Edge 登录与组合查询、编辑移出仅一次 PUT 和刷新持久化。见 [机器结果](../verification/task-search/public-results.json)。
+- 仅按精确 ID 清理本轮 2 个合成账号、1 个临时项目和 3 个临时任务；最终仍保留原有 1 个账号和 1 个项目，任务 0；外键与完整性正常。上一轮删除授权未复用。
+- 原主站 / Fieldnotes / OpenCode 发布前后均 **200 / 200 / 302**。沿用现有 TLS，暂存私钥已移除。
+- 独立人工复验未执行，按用户授权不阻塞部署。
+
+![真实公网优先级与搜索筛选](../verification/task-search/public-1366.png)
+
+---
+
+以下保留历史版本证据，当前运行源码与状态以上方为准。
 # 账号协作版公网部署（当前）
 
 **已上线：[tboard.bigdogaaa.cn](https://tboard.bigdogaaa.cn/)**。2026-10-28 13:07（北京时间）完成升级；入口直接显示个人登录/注册页，旧统一 team 密码不再用于站点访问。

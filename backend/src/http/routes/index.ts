@@ -37,6 +37,7 @@ export function registerRoutes(
     db: db.raw,
     now: runtime.now,
     generateId: runtime.generateId,
+    priority: config.features.priority,
   });
 
   app.use('/api/v1', healthRouter({ config, db, schema }));
@@ -53,7 +54,7 @@ export function registerRoutes(
   }
   app.use('/api/v1', membersRouter({ service: members, projects }));
   app.use('/api/v1', boardsRouter({ service: boards, projects, db: db.raw }));
-  app.use('/api/v1', tasksRouter({ service: tasks, projects, db: db.raw }));
+  app.use('/api/v1', tasksRouter({ service: tasks, projects, db: db.raw, features: config.features }));
 
   if (config.env === 'test') {
     app.use('/api/v1', testOnlyRouter());

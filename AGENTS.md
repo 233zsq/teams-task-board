@@ -19,6 +19,7 @@
 - 已有 shared 契约包（ESM + CJS）、Vue 3 前端工作区、shared/backend/frontend 测试、一键 HTTP 回归与双浏览器 E2E；当前命令和版本从 package scripts 与验证记录读取。
 - S1～S4 已实现；S6 增加个人账号、项目授权、负责人/发布者、个人视图与动态，契约读 spec 第 1 节 v0.6 增量，验证见 `verification/accounts-projects/README.md`。线上版本读 `deploy/DEPLOYMENT.md`。组员独立复验未执行，用户明确其不阻塞部署。
 - 命令与依赖版本以根 `package.json`、各工作区 `package.json` 和锁文件为准。运行 `npm run` 可查看当前脚本，不执行文档中尚未提供的命令。
+- S5 已选择优先级与搜索筛选（REQ-016/017/026），验证入口 `verification/task-search/README.md`；筛选结果与全量任务快照分开，后续读失败不得改报已提交写入失败。关闭扩展的兼容测试不能替代开启模式验收。
 
 ## 工作循环
 

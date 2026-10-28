@@ -1,6 +1,15 @@
 /** Shared API contract types. Field names and shapes mirror spec.md §9. */
 
 export type TaskStatus = 'todo' | 'doing' | 'done';
+export type TaskPriority = 'low' | 'medium' | 'high';
+
+export interface TaskFilters {
+  q?: string;
+  assigneeId?: string;
+  priority?: TaskPriority;
+  dueFrom?: string;
+  dueTo?: string;
+}
 
 export interface Board {
   id: string;
@@ -27,6 +36,7 @@ export interface Task {
   createdAt: string;
   updatedAt: string;
   createdBy?: Member | null;
+  priority?: TaskPriority;
 }
 
 export interface AccountUser extends Member {
@@ -58,6 +68,7 @@ export interface TaskFieldInput {
   dueDate: string | null;
   assigneeId: string | null;
   status: TaskStatus;
+  priority?: TaskPriority;
 }
 
 export interface CreateBoardInput {

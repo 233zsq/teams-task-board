@@ -1,0 +1,72 @@
+{
+  "date": "2026-10-28T05:55:17.293Z",
+  "node": "v24.18.0",
+  "browsers": [
+    "chrome 156.0.8078.47 (explicit executable)",
+    "msedge 156.0.4314.42"
+  ],
+  "results": [
+    {
+      "name": "HTTP default-enabled feature contract and priority persistence",
+      "status": "passed"
+    },
+    {
+      "name": "HTTP title/description search, literal wildcard and combined inclusive range",
+      "status": "passed"
+    },
+    {
+      "name": "HTTP invalid query/PUT, anonymous and foreign-project boundaries",
+      "status": "passed"
+    },
+    {
+      "name": "chrome priority display, title/description and personal intersection",
+      "status": "passed"
+    },
+    {
+      "name": "chrome combined filters, dates, empty state and clear",
+      "status": "passed"
+    },
+    {
+      "name": "chrome priority edit leaves filter, create high priority and persists reload",
+      "status": "passed"
+    },
+    {
+      "name": "chrome failed query is not empty; committed write is never replayed",
+      "status": "passed"
+    },
+    {
+      "name": "chrome slow query cannot overwrite a newer query",
+      "status": "passed"
+    },
+    {
+      "name": "chrome changing project resets pending conditions",
+      "status": "passed"
+    },
+    {
+      "name": "msedge priority display, title/description and personal intersection",
+      "status": "passed"
+    },
+    {
+      "name": "msedge combined filters, dates, empty state and clear",
+      "status": "passed"
+    },
+    {
+      "name": "msedge priority edit leaves filter, create high priority and persists reload",
+      "status": "passed"
+    },
+    {
+      "name": "msedge failed query is not empty; committed write is never replayed",
+      "status": "passed"
+    },
+    {
+      "name": "msedge slow query cannot overwrite a newer query",
+      "status": "passed"
+    },
+    {
+      "name": "msedge changing project resets pending conditions",
+      "status": "passed"
+    }
+  ],
+  "runtimeErrors": [],
+  "database": "temporary, cleaned"
+}
