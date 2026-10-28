@@ -15,6 +15,7 @@ export interface TestAppOptions {
   migrationsDir?: string;
   now?: () => Date;
   generateId?: () => string;
+  authentication?: boolean;
 }
 
 export interface TestApp {
@@ -54,6 +55,7 @@ export function makeTestApp(options: TestAppOptions = {}): TestApp {
 
   const memory = createMemoryLogger();
   const app = createApp({
+    authentication: options.authentication ?? false,
     config,
     db,
     logger: memory.logger,

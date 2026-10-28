@@ -40,6 +40,7 @@ const label = computed(
     @click="emit('open', task.id)"
   >
     <h4 class="task-card__title">{{ task.title }}</h4>
+    <p v-if="'createdBy' in task" class="task-publisher">{{ task.createdBy?.displayName ?? '历史任务' }} 发布</p>
     <p v-if="task.description !== ''" class="task-card__description">
       {{ task.description }}
     </p>

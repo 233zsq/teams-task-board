@@ -45,6 +45,7 @@ const updatedAtText = computed(() => formatBusinessDateTime(props.task.updatedAt
       </p>
 
       <dl class="detail__grid">
+        <div v-if="'createdBy' in task"><dt>发布者</dt><dd>{{ task.createdBy?.displayName ?? '历史任务（发布者未知）' }}</dd></div>
         <div>
           <dt>负责人</dt>
           <dd>{{ assignee }}</dd>

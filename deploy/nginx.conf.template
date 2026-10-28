@@ -14,8 +14,7 @@ server {
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_session_cache shared:team_task_board_tls:1m;
 
-    auth_basic "Team task board";
-    auth_basic_user_file /etc/team-task-board/users.htpasswd;
+    # Pages are public; private APIs enforce personal sessions and project membership.
     client_max_body_size 1m;
     add_header Strict-Transport-Security "max-age=15552000" always;
     add_header X-Content-Type-Options nosniff always;

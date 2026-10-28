@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import BoardSidebar from '../features/boards/BoardSidebar.vue';
 import BoardWorkspace from '../features/tasks/BoardWorkspace.vue';
@@ -27,7 +27,10 @@ async function load(boardId: string): Promise<void> {
 
 onMounted(() => {
   void load(props.boardId);
+  window.addEventListener('account:profile', refreshIdentity);
 });
+function refreshIdentity(): void { void store.refreshBoard(); }
+onBeforeUnmount(() => window.removeEventListener('account:profile', refreshIdentity));
 
 watch(
   () => props.boardId,

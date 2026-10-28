@@ -6,6 +6,9 @@ export interface Board {
   id: string;
   name: string;
   createdAt: string;
+  owner?: Member | null;
+  memberCount?: number;
+  role?: 'owner' | 'member';
 }
 
 export interface Member {
@@ -23,6 +26,29 @@ export interface Task {
   status: TaskStatus;
   createdAt: string;
   updatedAt: string;
+  createdBy?: Member | null;
+}
+
+export interface AccountUser extends Member {
+  username: string;
+  createdAt: string;
+}
+
+export interface AccountSession {
+  user: AccountUser | null;
+  csrfToken: string | null;
+}
+
+export interface ProjectMember extends AccountUser {
+  role: 'owner' | 'member';
+}
+
+export interface ProjectActivity {
+  id: number;
+  actor: Member;
+  action: string;
+  subject: string;
+  createdAt: string;
 }
 
 /** The five complete business fields submitted by PUT and produced by POST. */

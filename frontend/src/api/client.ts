@@ -8,6 +8,8 @@ import {
 
 /** Client-side timeout; it only ends local waiting, never cancels a committed write. */
 export const REQUEST_TIMEOUT_MS = 10_000;
+let csrfToken: string | null = null;
+export function setCsrfToken(value: string | null): void { csrfToken = value; }
 
 export type ApiFailureKind = 'http' | 'timeout' | 'network' | 'cancelled';
 
@@ -176,6 +178,9 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
       requestOptions.signal?.addEventListener('abort', onAbort, { once: true });
 
       const headers: Record<string, string> = { Accept: 'application/json' };
+      if (!['GET', 'HEAD', 'OPTIONS'].includes(method.toUpperCase()) && csrfToken) {
+        headers['X-CSRF-Token'] = csrfToken;
+      }
       let body: string | undefined;
       if (requestOptions.body !== undefined) {
         headers['Content-Type'] = 'application/json';
@@ -217,6 +222,9 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
 
         if (!response.ok) {
           const parsed = parseErrorBody(payload);
+          if (parsed?.code === 'UNAUTHENTICATED' && typeof window !== 'undefined') {
+            window.dispatchEvent(new Event('account:expired'));
+          }
           if (parsed !== null) {
             throw new ApiError({
               kind: 'http',

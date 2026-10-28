@@ -5,6 +5,7 @@ import type { ResourceStatus } from '../../state/workspace';
 import { describeError } from '../ui/messages';
 import CreateBoardForm from './CreateBoardForm.vue';
 import type { ApiError } from '../../api/client';
+import { account } from '../../state/account';
 
 const props = defineProps<{
   boards: Board[];
@@ -84,6 +85,7 @@ function select(boardId: string): void {
             <span class="board-nav-item__meta">
               <span class="board-nav-item__name">{{ board.name }}</span>
               <span class="board-nav-item__time">创建于 {{ createdAtText(board) }}</span>
+              <span v-if="board.owner" class="board-nav-item__time">{{ board.role === 'owner' ? '我负责的项目' : `负责人 · ${board.owner.displayName}` }}</span>
             </span>
           </button>
         </li>
@@ -100,7 +102,7 @@ function select(boardId: string): void {
     </section>
 
     <p class="sidebar-footnote">
-      成员 A～D 由数据库预置，仅作为任务负责人，不是登录账号；多个浏览器共享同一份数据，通过“刷新看板”读取他人改动。
+      {{ account.user ? '这里只显示你参与的项目。请负责人按用户名添加伙伴，通过“刷新看板”读取他人改动。' : '成员 A～D 由数据库预置，仅作为任务负责人，不是登录账号；多个浏览器共享同一份数据，通过“刷新看板”读取他人改动。' }}
     </p>
   </aside>
 </template>
